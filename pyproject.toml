@@ -16,12 +16,28 @@ asyncpg = "^0.30.0"
 alembic = "^1.14.1"
 uvicorn = "^0.34.0"
 
-
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 black = "^25.1.0"
 ruff = "^0.9.6"
 mypy = "^1.15.0"
+poethepoet = "^0.32.2"
+
+[tool.poe.tasks]
+init-py = """
+#!/usr/bin/env python
+import os
+
+def create_init_files():
+    for root, dirs, files in os.walk('.'):
+        if '.venv' not in root and '.git' not in root:  # Skip virtual env and git dirs
+            if '__init__.py' not in files:
+                with open(os.path.join(root, '__init__.py'), 'a'):
+                    pass
+
+if __name__ == '__main__':
+    create_init_files()
+"""
 
 [build-system]
 requires = ["poetry-core"]
