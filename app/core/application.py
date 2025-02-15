@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from app.core.config import Settings
 from app.api.routes.v1.router import router as api_v1_router
+from app.core.middleware.error_handler import ErrorHandlerMiddleware
 
 
 def create_app() -> FastAPI:
@@ -15,6 +16,8 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
     )
+
+    app.add_middleware(ErrorHandlerMiddleware)
 
     # Include main v1 router
     app.include_router(api_v1_router, prefix="/v1")

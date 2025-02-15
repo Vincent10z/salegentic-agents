@@ -1,17 +1,25 @@
-from typing import Dict, List, Optional
+import uuid
+from typing import Dict, Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
 from app.models.integrations.hubspot.hubspot import Hubspot
-from ..clients.hubspot.auth import HubspotAuth
-from ..clients.hubspot.client import HubspotClient
-from ..core.config import settings
-from ..core.database import get_session
+from app.repository.hubspot.hubspot_repository import HubspotRepository
+from ...clients.hubspot.auth import HubspotAuth
+from ...clients.hubspot.client import HubspotClient
+from ...core.config import settings
+from ...core.database import get_session
+from app.core.errors import NotFoundError, IntegrationError
+
 
 class HubspotService:
-    def __init__(self, db: AsyncSession = Depends(get_session)):
-        self.db = db
+    def __init__(
+            self,
+            db: AsyncSession = Depends(get_session),
+            repository: HubspotRepository = None
+    ):
+        self.repository = repository or HubspotRepository(db)
         self.auth_client = HubspotAuth(
             client_id=settings.HUBSPOT_CLIENT_ID,
             client_secret=settings.HUBSPOT_CLIENT_SECRET,
@@ -24,16 +32,12 @@ class HubspotService:
         # Store state in cache/db for validation
         return self.auth_client.get_authorization_url(state)
 
-    async def handle_oauth_callback(self, code: str, state: str, user_id: str) -> Dict:
+    async def handle_oauth_callback(self, code: str, state: str, user_id: str) -> Optional[Hubspot]:
         """Handle OAuth callback from HubSpot."""
-        # Validate state
         token_data = await self.auth_client.exchange_code(code)
-
-        # Calculate expiration
         expires_at = datetime.utcnow() + timedelta(seconds=token_data["expires_in"])
 
-        # Create credentials record
-        credentials = Hubspot(
+        record = Hubspot(
             user_id=user_id,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],
@@ -42,32 +46,32 @@ class HubspotService:
             account_name=token_data.get("hub_domain")
         )
 
-        self.db.add(credentials)
-        await self.db.commit()
-        await self.db.refresh(credentials)
-
-        return {
-            "status": "success",
-            "credentials_id": str(credentials.id)
-        }
+        saved_credentials = await self.repository.create_hubspot_record(record)
+        return saved_credentials
 
     async def get_client(self, user_id: str) -> HubspotClient:
         """Get authenticated HubSpot client for user."""
-        credentials = await self._get_valid_credentials(user_id)
-        if not credentials:
-            raise HTTPException(status_code=404, detail="No valid HubSpot connection found")
+        try:
+            credentials = await self._get_valid_credentials(user_id)
 
-        return HubspotClient(credentials.access_token)
+            if not credentials:
+                raise NotFoundError(
+                    message="No valid HubSpot record found",
+                    context={"user_id": user_id}
+                )
+
+            return HubspotClient(credentials.access_token)
+
+        except Exception as e:
+            raise IntegrationError(
+                message="Failed to initialize HubSpot client",
+                cause=e,
+                context={"user_id": user_id}
+            )
 
     async def _get_valid_credentials(self, user_id: str) -> Optional[Hubspot]:
         """Get valid credentials, refreshing if necessary."""
-        query = select(Hubspot).where(
-            Hubspot.user_id == user_id,
-            Hubspot.is_active == True
-        )
-
-        result = await self.db.execute(query)
-        credentials = result.scalar_one_or_none()
+        credentials = await self.repository.get_hubspot_record(user_id)
 
         if not credentials:
             return None
@@ -75,9 +79,11 @@ class HubspotService:
         # Check if token needs refresh
         if datetime.utcnow() >= credentials.expires_at:
             token_data = await self.auth_client.refresh_token(credentials.refresh_token)
+
             credentials.access_token = token_data["access_token"]
             credentials.refresh_token = token_data["refresh_token"]
+
             credentials.expires_at = datetime.utcnow() + timedelta(seconds=token_data["expires_in"])
-            await self.db.commit()
+            await self.repository.update_hubspot_record(credentials)
 
         return credentials
