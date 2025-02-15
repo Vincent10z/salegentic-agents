@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     DEBUG: bool
     APP_HOST: str
     APP_PORT: int
+    PROJECT_NAME: str
+    PROJECT_DESCRIPTION: str
+    VERSION: str
 
     # Database
     DATABASE_URL: str

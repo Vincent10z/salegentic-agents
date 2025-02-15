@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List, Optional
-from ......services.hubspot.hubspot_service import HubspotService
-from ......core import get_current_user
+from fastapi import APIRouter, Depends
+from typing import List
+from core import get_current_user
 from . import endpoints
 
-# Initialize router with prefix and tags for swagger documentation
 router = APIRouter(
     prefix="/hubspot",
     tags=["HubSpot Integration"],
