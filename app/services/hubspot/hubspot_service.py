@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from ..models.oauth_credentials import OAuthCredentials
+from app.models.integrations.hubspot.hubspot import Hubspot
 from ..clients.hubspot.auth import HubspotAuth
 from ..clients.hubspot.client import HubspotClient
 from ..core.config import settings
@@ -33,7 +33,7 @@ class HubspotService:
         expires_at = datetime.utcnow() + timedelta(seconds=token_data["expires_in"])
 
         # Create credentials record
-        credentials = OAuthCredentials(
+        credentials = Hubspot(
             user_id=user_id,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],
@@ -59,11 +59,11 @@ class HubspotService:
 
         return HubspotClient(credentials.access_token)
 
-    async def _get_valid_credentials(self, user_id: str) -> Optional[OAuthCredentials]:
+    async def _get_valid_credentials(self, user_id: str) -> Optional[Hubspot]:
         """Get valid credentials, refreshing if necessary."""
-        query = select(OAuthCredentials).where(
-            OAuthCredentials.user_id == user_id,
-            OAuthCredentials.is_active == True
+        query = select(Hubspot).where(
+            Hubspot.user_id == user_id,
+            Hubspot.is_active == True
         )
 
         result = await self.db.execute(query)

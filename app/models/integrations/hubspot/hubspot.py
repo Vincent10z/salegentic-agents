@@ -4,7 +4,8 @@ from sqlalchemy.sql import func
 import uuid
 from .base import Base
 
-class OAuthCredentials(Base):
+
+class Hubspot(Base):
     __tablename__ = "oauth_credentials"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

@@ -1,4 +1,3 @@
-# app/routes/v1/health/router.py
 from fastapi import APIRouter
 from . import endpoints
 
@@ -14,7 +13,7 @@ router = APIRouter(
 
 # Health Route
 router.add_api_route(
-    path="/",
+    path="",
     endpoint=endpoints.health_check,
     methods=["GET"],
     summary="Health Check",

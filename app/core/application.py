@@ -1,18 +1,22 @@
+# app/core/application.py
 from fastapi import FastAPI
 from app.core.config import Settings
-from app.api.routes.v1.health.router import router as health_router
+from app.api.routes.v1.router import router as api_v1_router
 
 
 def create_app() -> FastAPI:
     settings = Settings()
 
     app = FastAPI(
-        title=settings.PROJECT_NAME,
+        title="Salesgentic Agents",
         description=settings.PROJECT_DESCRIPTION,
-        version=settings.VERSION
+        version="v0.0.1",
+        # openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        docs_url="/docs",
+        redoc_url="/redoc",
     )
 
-    # Include routers
-    app.include_router(health_router)
+    # Include main v1 router
+    app.include_router(api_v1_router, prefix="/v1")
 
     return app
