@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from datetime import datetime
 
-from app.models.user import User
+from app.models.user.user import User
 
 
 class UserRepository:

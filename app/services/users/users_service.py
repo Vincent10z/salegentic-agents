@@ -3,7 +3,7 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
+from app.models.user.user import User
 from app.repositories.user.user import UserRepository
 from app.core.database import get_session
 from app.core.errors import NotFoundError
@@ -158,3 +158,6 @@ class UserService:
                 status_code=500,
                 detail=f"Failed to update user account: {str(e)}"
             )
+
+    async def delete_user(self, user_id):
+        pass

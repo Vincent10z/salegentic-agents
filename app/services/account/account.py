@@ -4,6 +4,8 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.account.account import Account
+from app.api.routes.v1.account.request import CreateAccountRequest
+from app.api.routes.v1.account.response import AccountResponse, AccountsListResponse, AccountDeleteResponse
 from app.repositories.account.account import AccountRepository
 from app.core.database import get_session
 from app.core.errors import NotFoundError
@@ -162,7 +164,7 @@ class AccountService:
             self,
             account_id: str,
             status: str
-    ) -> Account:
+    ) -> m:
         """Update account's subscription status."""
         try:
             account = await self.get_account(account_id)
