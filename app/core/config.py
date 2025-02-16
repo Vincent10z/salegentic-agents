@@ -54,10 +54,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: Optional[str] = None
     LOG_FORMAT: Optional[str] = None
 
-
-@property
-def DATABASE_URL(self) -> str:
-    return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    @property
+    def RETURN_DATABASE_URL(self) -> str:
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     # @validator("DATABASE_URL")
     # def validate_database_url(cls, v: str) -> str:

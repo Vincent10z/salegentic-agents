@@ -20,7 +20,7 @@ class CreateUserRequest(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     account_id: Optional[str] = None
-    phone: Optional[constr(regex=r'^\+?1?\d{9,15}$')] = None
+    phone: Optional[str] = None
     where_found_us: Optional[str] = None
     account_role: AccountRole = AccountRole.STANDARD
     source: UserSource = UserSource.WEBSITE
@@ -31,7 +31,7 @@ class UpdateUserRequest(BaseModel):
     email: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    phone: Optional[constr(regex=r'^\+?1?\d{9,15}$')] = None
+    phone: Optional[str] = None
     where_found_us: Optional[str] = None
     account_role: Optional[AccountRole] = None
     account_id: Optional[str] = None

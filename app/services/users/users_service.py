@@ -12,7 +12,7 @@ from app.core.errors import NotFoundError
 class UserService:
     def __init__(
             self,
-            db: AsyncSession = Depends(get_session),
+            db: AsyncSession,
             repository: UserRepository = None
     ):
         self.repository = repository or UserRepository(db)
@@ -161,3 +161,7 @@ class UserService:
 
     async def delete_user(self, user_id):
         pass
+
+
+def get_user_service(db: AsyncSession = Depends(get_session)) -> UserService:
+    return UserService(db=db)
