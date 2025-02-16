@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
 from app.models.integrations.hubspot.hubspot import Hubspot
-from app.repository.hubspot.hubspot_repository import HubspotRepository
+from app.repositories.hubspot.hubspot import HubspotRepository
 from ...clients.hubspot.auth import HubspotAuth
 from ...clients.hubspot.client import HubspotClient
 from ...core.config import settings
@@ -29,7 +29,7 @@ class HubspotService:
     async def initiate_oauth(self, user_id: str) -> str:
         """Start OAuth flow for HubSpot."""
         state = str(uuid.uuid4())
-        # Store state in cache/db for validation
+
         return self.auth_client.get_authorization_url(state)
 
     async def handle_oauth_callback(self, code: str, state: str, user_id: str) -> Optional[Hubspot]:

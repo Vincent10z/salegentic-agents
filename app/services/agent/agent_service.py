@@ -1,6 +1,6 @@
 from app.models.request import ChatRequest
 from app.models.response import ChatResponse
-from app.repository.vector_store import VectorStore
+from app.repositories.vector_store import VectorStore
 
 
 class AgentService:

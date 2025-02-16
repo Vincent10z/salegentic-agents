@@ -1,11 +1,16 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+from requests import Response
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from app.core.errors import AppError
 
 
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+            self,
+            request: Request,
+            call_next: RequestResponseEndpoint
+    ) -> Response:
         try:
             response = await call_next(request)
             return response
@@ -15,7 +20,6 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 content=e.to_dict()
             )
         except Exception as e:
-            # Log unexpected errors here
             app_error = AppError(
                 message="An unexpected error occurred",
                 code="INTERNAL_SERVER_ERROR",

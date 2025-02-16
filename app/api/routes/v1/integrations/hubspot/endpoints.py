@@ -13,7 +13,7 @@ router = APIRouter()
 #     """Initiate HubSpot OAuth flow."""
 #     auth_url = await hubspot_service.initiate_oauth(current_user["id"])
 #     return {"authorization_url": auth_url}
-#
+
 # @router.get("/callback")
 # async def oauth_callback(
 #         code: str,
