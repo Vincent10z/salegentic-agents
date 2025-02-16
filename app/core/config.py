@@ -12,8 +12,13 @@ class Settings(BaseSettings):
     # App Settings
     APP_ENV: Optional[str] = None
     DEBUG: Optional[bool] = None
-    APP_HOST: Optional[str] = None
-    APP_PORT: Optional[int] = None
+
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = "postgres"
+    DB_HOST: str = "localhost"
+    DB_PORT: str = "5432"
+    DB_NAME: str = "your_db_name"
+
     PROJECT_NAME: Optional[str] = None
     PROJECT_DESCRIPTION: Optional[str] = None
     APP_VERSION: Optional[str] = None
@@ -48,6 +53,11 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: Optional[str] = None
     LOG_FORMAT: Optional[str] = None
+
+
+@property
+def DATABASE_URL(self) -> str:
+    return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     # @validator("DATABASE_URL")
     # def validate_database_url(cls, v: str) -> str:
