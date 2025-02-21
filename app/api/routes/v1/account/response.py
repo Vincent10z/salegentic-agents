@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from .request import SubscriptionStatus
-from app.models.account.account import Account
+from app.models.account import Account
 
 
 class AccountResponse(BaseModel):
@@ -10,7 +10,6 @@ class AccountResponse(BaseModel):
     id: str
     name: str
     active_plan_id: Optional[str] = None
-    warmup_enabled: bool
     products_enabled: bool
     subscription_status: Optional[SubscriptionStatus] = None
     plan_started_at: Optional[datetime] = None
@@ -53,7 +52,6 @@ def new_account_response(account: Account) -> AccountResponse:
         id=account.id,
         name=account.name,
         active_plan_id=account.active_plan_id,
-        warmup_enabled=account.warmup_enabled,
         products_enabled=account.products_enabled,
         subscription_status=account.subscription_status,
         plan_started_at=account.plan_started_at,

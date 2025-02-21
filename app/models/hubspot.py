@@ -1,17 +1,16 @@
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
-from ...base import Base
+from app.models.base import Base
 
 
 class Hubspot(Base):
-    __tablename__ = "oauth_credentials"
+    __tablename__ = "hubspots"
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
     provider = Column(String, nullable=False, default="hubspot")
     access_token = Column(String, nullable=False)
     refresh_token = Column(String, nullable=False)

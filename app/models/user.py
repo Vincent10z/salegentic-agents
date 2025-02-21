@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
-from ..base import Base
+from app.models.base import Base
 
 
 class User(Base):
@@ -16,6 +16,6 @@ class User(Base):
     phone = Column(String)
     where_found_us = Column(String)
     account_role = Column(String, default='standard')
-    source = Column(String, default='sf')
+    source = Column(String, default='web')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

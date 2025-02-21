@@ -14,10 +14,10 @@ class Settings(BaseSettings):
     DEBUG: Optional[bool] = None
 
     DB_USER: str = "postgres"
-    DB_PASSWORD: str = "postgres"
+    DB_PASSWORD: str = "password"
     DB_HOST: str = "localhost"
     DB_PORT: str = "5432"
-    DB_NAME: str = "your_db_name"
+    DB_NAME: str = "postgres"
 
     PROJECT_NAME: Optional[str] = None
     PROJECT_DESCRIPTION: Optional[str] = None

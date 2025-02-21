@@ -14,9 +14,7 @@ from alembic import context
 
 # Import your models using absolute imports
 from app.models.base import Base
-from app.models.integrations.hubspot.hubspot import Hubspot
-from app.models.user.user import User
-from app.models.account.account import Account
+from app.models import account, plan, user, hubspot
 
 # from app.repositories.vector import Vector
 
@@ -33,7 +31,7 @@ target_metadata = Base.metadata
 
 def get_url():
     from app.core.config import settings
-    return settings.DATABASE_URL
+    return settings.RETURN_DATABASE_URL
 
 
 def run_migrations_offline() -> None:

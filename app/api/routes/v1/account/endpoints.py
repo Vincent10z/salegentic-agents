@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Dict, Optional
 from app.core.auth import get_current_user
 from app.services.account.account import AccountService
+from app.core.dependencies.services import get_account_service
+
+
 from .request import (
     CreateAccountRequest,
     UpdateAccountRequest,
@@ -28,11 +31,13 @@ router = APIRouter()
 async def create_account(
         request: CreateAccountRequest,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
     """Create a new account."""
+    print("Received request data:", request.model_dump())  # Debugging step
     account = await account_service.create_account(**request.model_dump())
     return new_account_response(account)
+
 
 
 @router.get("", response_model=AccountsListResponse)
@@ -42,7 +47,7 @@ async def list_accounts(
         subscription_status: Optional[SubscriptionStatus] = None,
         plan_id: Optional[str] = None,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountsListResponse:
     """Get list of accounts with optional filtering."""
     if subscription_status:
@@ -62,7 +67,7 @@ async def list_accounts(
 async def get_account(
         account_id: str,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
     """Get account by ID."""
     account = await account_service.get_account(account_id)
@@ -74,7 +79,7 @@ async def update_account(
         account_id: str,
         request: UpdateAccountRequest,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
     """Update account information."""
     account = await account_service.update_account(
@@ -89,9 +94,9 @@ async def update_account_plan(
         account_id: str,
         request: UpdateAccountPlanRequest,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
-    """Update account's plan."""
+    """Update account's plans."""
     account = await account_service.update_plan(
         account_id,
         request.plan_id,
@@ -105,12 +110,11 @@ async def update_feature_flags(
         account_id: str,
         request: UpdateFeatureFlagsRequest,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
     """Update account's feature flags."""
     account = await account_service.update_feature_flags(
         account_id,
-        request.warmup_enabled,
         request.products_enabled
     )
     return new_account_response(account)
@@ -121,7 +125,7 @@ async def update_subscription_status(
         account_id: str,
         request: UpdateSubscriptionStatusRequest,
         current_user: Dict = Depends(get_current_user),
-        account_service: AccountService = Depends()
+        account_service: AccountService = Depends(get_account_service)
 ) -> AccountResponse:
     """Update account's subscription status."""
     account = await account_service.update_subscription_status(

@@ -1,5 +1,4 @@
 from typing import Optional, List
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from datetime import datetime
@@ -50,13 +49,10 @@ class AccountRepository:
     async def update_feature_flags(
             self,
             account_id: str,
-            warmup_enabled: Optional[bool] = None,
             products_enabled: Optional[bool] = None
     ) -> Optional[Account]:
         """Update account feature flags."""
         update_values = {}
-        if warmup_enabled is not None:
-            update_values["warmup_enabled"] = warmup_enabled
         if products_enabled is not None:
             update_values["products_enabled"] = products_enabled
 
@@ -78,7 +74,7 @@ class AccountRepository:
             plan_id: str,
             plan_started_at: datetime = None
     ) -> Optional[Account]:
-        """Update account's active plan and plan start date."""
+        """Update account's active plans and plans start date."""
         update_values = {
             "active_plan_id": plan_id,
             "plan_started_at": plan_started_at or datetime.utcnow()
@@ -94,7 +90,7 @@ class AccountRepository:
         return result.scalar_one_or_none()
 
     async def get_accounts_by_plan(self, plan_id: str) -> List[Account]:
-        """Get all accounts with a specific plan."""
+        """Get all accounts with a specific plans."""
         stmt = select(Account).where(Account.active_plan_id == plan_id)
         result = await self.db.execute(stmt)
         return result.scalars().all()

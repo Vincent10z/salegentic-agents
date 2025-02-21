@@ -16,27 +16,24 @@ class CreateAccountRequest(BaseModel):
     name: str
     active_plan_id: Optional[str] = None
     subscription_status: Optional[SubscriptionStatus] = None
-    warmup_enabled: bool = True
     products_enabled: bool = True
 
 
 class UpdateAccountRequest(BaseModel):
     """Request model for updating an existing account"""
     name: Optional[str] = None
-    warmup_enabled: Optional[bool] = None
     products_enabled: Optional[bool] = None
     subscription_status: Optional[SubscriptionStatus] = None
 
 
 class UpdateAccountPlanRequest(BaseModel):
-    """Request model for updating account plan"""
+    """Request model for updating account plans"""
     plan_id: str
     subscription_status: Optional[SubscriptionStatus] = None
 
 
 class UpdateFeatureFlagsRequest(BaseModel):
     """Request model for updating account feature flags"""
-    warmup_enabled: Optional[bool] = None
     products_enabled: Optional[bool] = None
 
 

@@ -1,10 +1,10 @@
 import uuid
-from typing import Dict, Optional
-from fastapi import Depends, HTTPException
+from typing import Optional
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from app.models.integrations.hubspot.hubspot import Hubspot
+from app.models.hubspot import Hubspot
 from app.repositories.hubspot.hubspot import HubspotRepository
 from ...clients.hubspot.auth import HubspotAuth
 from ...clients.hubspot.client import HubspotClient

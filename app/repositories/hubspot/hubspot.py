@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.integrations.hubspot.hubspot import Hubspot
+from app.models.hubspot import Hubspot
 
 
 class HubspotRepository:

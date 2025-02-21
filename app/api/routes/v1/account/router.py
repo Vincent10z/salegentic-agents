@@ -30,7 +30,7 @@ router.add_api_route(
     endpoint=endpoints.list_accounts,
     methods=["GET"],
     summary="List accounts",
-    description="Get a paginated list of accounts, optionally filtered by subscription status or plan",
+    description="Get a paginated list of accounts, optionally filtered by subscription status or plans",
     response_model=AccountsListResponse,
 )
 
@@ -54,13 +54,13 @@ router.add_api_route(
     response_model=AccountResponse,
 )
 
-# Update account plan
+# Update account plans
 router.add_api_route(
-    path="/{account_id}/plan",
+    path="/{account_id}/plans",
     endpoint=endpoints.update_account_plan,
     methods=["PATCH"],
-    summary="Update account plan",
-    description="Update an account's plan and subscription status",
+    summary="Update account plans",
+    description="Update an account's plans and subscription status",
     response_model=AccountResponse,
 )
 

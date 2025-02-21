@@ -1,12 +1,13 @@
-from datetime import datetime
 from typing import Optional, List
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user.user import User
+from app.models.user import User
 from app.repositories.user.user import UserRepository
 from app.core.database import get_session
 from app.core.errors import NotFoundError
+from app.core.id_generator.id_generator import generate_user_id
+
 
 
 class UserService:
@@ -37,6 +38,7 @@ class UserService:
 
             # Create new user
             user = User(
+                id=generate_user_id(),
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
@@ -44,7 +46,7 @@ class UserService:
                 phone=phone,
                 where_found_us=where_found_us,
                 account_role=account_role,
-                source=source
+                source=source,
             )
 
             return await self.repository.create_user(user)
