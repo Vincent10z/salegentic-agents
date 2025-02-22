@@ -163,7 +163,3 @@ class UserService:
 
     async def delete_user(self, user_id):
         pass
-
-
-def get_user_service(db: AsyncSession = Depends(get_session)) -> UserService:
-    return UserService(db=db)

@@ -3,7 +3,7 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.account import Account
+from app.models.account import Account, AccountStatus
 from app.repositories.account.account import AccountRepository
 from app.core.database import get_session
 from app.core.errors import NotFoundError
@@ -30,7 +30,7 @@ class AccountService:
                 id=generate_account_id(),
                 name=name,
                 active_plan_id=active_plan_id,
-                subscription_status=subscription_status,
+                subscription_status=subscription_status or AccountStatus.ACTIVE.value,
                 products_enabled=products_enabled,
                 plan_started_at=datetime.utcnow() if active_plan_id else None
             )

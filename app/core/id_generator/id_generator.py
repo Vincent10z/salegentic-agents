@@ -7,8 +7,9 @@ import typing
 class EntityType(IntEnum):
     ACCOUNT = 0
     USER = 1
-    OAUTH_CREDENTIALS = 2
+    HUBSPOT = 2
     PLAN = 3
+    WORKSPACE = 4
 
 
 class IDGenerator:
@@ -20,8 +21,9 @@ class IDGenerator:
     PREFIX_MAP = {
         EntityType.ACCOUNT: "acc",
         EntityType.USER: "usr",
-        EntityType.OAUTH_CREDENTIALS: "oauth",
-        EntityType.PLAN: "pln"
+        EntityType.HUBSPOT: "hb",
+        EntityType.PLAN: "pln",
+        EntityType.WORKSPACE: "wks",
     }
 
     @classmethod
@@ -62,14 +64,19 @@ def generate_user_id() -> str:
     return IDGenerator.generate_id(EntityType.USER)
 
 
-def generate_oauth_id() -> str:
+def generate_hubspot_id() -> str:
     """Generate a unique ID for OAuth credentials."""
-    return IDGenerator.generate_id(EntityType.OAUTH_CREDENTIALS)
+    return IDGenerator.generate_id(EntityType.HUBSPOT)
 
 
 def generate_plan_id() -> str:
     """Generate a unique ID for a plans."""
     return IDGenerator.generate_id(EntityType.PLAN)
+
+
+def generate_workspace_id() -> str:
+    """Generate a unique ID for a plans."""
+    return IDGenerator.generate_id(EntityType.WORKSPACE)
 
 
 # Convenience function to get ID generator for a specific entity type
@@ -90,5 +97,6 @@ if __name__ == "__main__":
     # Example usage
     print("Account ID:", generate_account_id())  # e.g. acc_7h3j4k5l6m7n8p9q0r1s
     print("User ID:", generate_user_id())  # e.g. usr_1a2b3c4d5e6f7g8h9i0j
-    print("OAuth ID:", generate_oauth_id())  # e.g. oauth_9w8v7u6t5s4r3q2p1o0
+    print("OAuth ID:", generate_hubspot_id())  # e.g. oauth_9w8v7u6t5s4r3q2p1o0
     print("Plan ID:", generate_plan_id())  # e.g. pln_2x3y4z5a6b7c8d9e0f1
+    print("Workspace ID:", generate_workspace_id())

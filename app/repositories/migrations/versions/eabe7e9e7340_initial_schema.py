@@ -60,10 +60,21 @@ def upgrade() -> None:
                     sa.PrimaryKeyConstraint('id')
                     )
 
-    # Create hubspots table
+    op.create_table('workspaces',
+                    sa.Column('id', sa.String(), nullable=False),
+                    sa.Column('name', sa.String(), nullable=True),
+                    sa.Column('slug', sa.String(), nullable=True),
+                    sa.Column('account_id', sa.String(), nullable=True),
+                    sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+                    sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
+                    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+                    sa.ForeignKeyConstraint(['account_id'], ['accounts.id'], name=op.f('fk_workspaces_account_id_accounts')),
+                    sa.PrimaryKeyConstraint('id')
+                    )
+
     op.create_table('hubspots',
                     sa.Column('id', sa.String(), nullable=False),
-                    sa.Column('user_id', sa.String(), nullable=False),
+                    sa.Column('workspace_id', sa.String(), nullable=False),
                     sa.Column('provider', sa.String(), nullable=False, default='hubspot'),
                     sa.Column('access_token', sa.String(), nullable=False),
                     sa.Column('refresh_token', sa.String(), nullable=False),
@@ -73,7 +84,7 @@ def upgrade() -> None:
                     sa.Column('account_name', sa.String(), nullable=True),
                     sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-                    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_hubspots_user_id_users')),
+                    sa.ForeignKeyConstraint(['workspace_id'], ['workspaces.id'], name=op.f('fk_hubspots_workspace_id_workspace')),
                     sa.PrimaryKeyConstraint('id')
                     )
 
@@ -82,3 +93,4 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_table('accounts')
     op.drop_table('plans')
+    op.drop_table('workspaces')

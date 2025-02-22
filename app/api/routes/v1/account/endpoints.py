@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Dict, Optional
 from app.core.auth import get_current_user
-from app.services.account.account import AccountService
+from app.services.account.account_service import AccountService
 from app.core.dependencies.services import get_account_service
 
 
