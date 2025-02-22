@@ -23,7 +23,6 @@ from ..users.response import (
 router = APIRouter()
 
 
-@router.post("", response_model=UserResponse)
 async def create_user(
         request: CreateUserRequest,
         current_user: Dict = Depends(get_current_user),
@@ -34,7 +33,6 @@ async def create_user(
     return transform_user_response(user)
 
 
-@router.get("", response_model=UsersListResponse)
 async def list_users(
         page: int = Query(1, ge=1),
         size: int = Query(10, ge=1, le=100),
@@ -53,7 +51,6 @@ async def list_users(
     return transform_users_list_response(users, total, page, size)
 
 
-@router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
         user_id: str,
         current_user: Dict = Depends(get_current_user),
@@ -64,7 +61,6 @@ async def get_user(
     return transform_user_response(user)
 
 
-@router.patch("/{user_id}", response_model=UserResponse)
 async def update_user(
         user_id: str,
         request: UpdateUserRequest,
@@ -79,7 +75,6 @@ async def update_user(
     return transform_user_response(user)
 
 
-@router.patch("/{user_id}/role", response_model=UserResponse)
 async def update_user_role(
         user_id: str,
         request: UpdateUserRoleRequest,
@@ -91,7 +86,6 @@ async def update_user_role(
     return transform_user_response(user)
 
 
-@router.patch("/{user_id}/account", response_model=UserResponse)
 async def update_user_account(
         user_id: str,
         request: UpdateUserAccountRequest,
@@ -103,7 +97,6 @@ async def update_user_account(
     return transform_user_response(user)
 
 
-@router.get("/email/{email}", response_model=UserResponse)
 async def get_user_by_email(
         email: str,
         current_user: Dict = Depends(get_current_user),
@@ -114,7 +107,6 @@ async def get_user_by_email(
     return transform_user_response(user)
 
 
-@router.delete("/{user_id}", response_model=UserDeleteResponse)
 async def delete_user(
         user_id: str,
         current_user: Dict = Depends(get_current_user),

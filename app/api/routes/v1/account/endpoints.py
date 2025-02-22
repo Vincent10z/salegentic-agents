@@ -4,7 +4,6 @@ from app.core.auth import get_current_user
 from app.services.account.account_service import AccountService
 from app.core.dependencies.services import get_account_service
 
-
 from .request import (
     CreateAccountRequest,
     UpdateAccountRequest,
@@ -27,7 +26,6 @@ from ..account.response import (
 router = APIRouter()
 
 
-@router.post("", response_model=AccountResponse)
 async def create_account(
         request: CreateAccountRequest,
         current_user: Dict = Depends(get_current_user),
@@ -39,8 +37,6 @@ async def create_account(
     return new_account_response(account)
 
 
-
-@router.get("", response_model=AccountsListResponse)
 async def list_accounts(
         page: int = Query(1, ge=1),
         size: int = Query(10, ge=1, le=100),
@@ -63,7 +59,6 @@ async def list_accounts(
     return get_accounts_response(accounts, total, page, size)
 
 
-@router.get("/{account_id}", response_model=AccountResponse)
 async def get_account(
         account_id: str,
         current_user: Dict = Depends(get_current_user),
@@ -74,7 +69,6 @@ async def get_account(
     return new_account_response(account)
 
 
-@router.patch("/{account_id}", response_model=AccountResponse)
 async def update_account(
         account_id: str,
         request: UpdateAccountRequest,
@@ -89,7 +83,6 @@ async def update_account(
     return new_account_response(account)
 
 
-@router.patch("/{account_id}/plan", response_model=AccountResponse)
 async def update_account_plan(
         account_id: str,
         request: UpdateAccountPlanRequest,
@@ -105,7 +98,6 @@ async def update_account_plan(
     return new_account_response(account)
 
 
-@router.patch("/{account_id}/features", response_model=AccountResponse)
 async def update_feature_flags(
         account_id: str,
         request: UpdateFeatureFlagsRequest,
@@ -120,7 +112,6 @@ async def update_feature_flags(
     return new_account_response(account)
 
 
-@router.patch("/{account_id}/subscription", response_model=AccountResponse)
 async def update_subscription_status(
         account_id: str,
         request: UpdateSubscriptionStatusRequest,

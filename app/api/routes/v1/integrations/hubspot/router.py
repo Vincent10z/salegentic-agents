@@ -1,9 +1,19 @@
 from fastapi import APIRouter, Depends
 from typing import List
-
+from app.api.routes.v1.integrations.hubspot.response import HubspotCallbackResponse
 from . import endpoints
 
 router = APIRouter(
+    prefix="/workspaces/{workspace_id}/hubspot",
+    tags=["HubSpot Integration"],
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
+        404: {"description": "Not Found"},
+    }
+)
+
+callback_router = APIRouter(
     prefix="/hubspot",
     tags=["HubSpot Integration"],
     responses={
@@ -13,24 +23,23 @@ router = APIRouter(
     }
 )
 
-# OAuth Routes
-# router.add_api_route(
-#     path="/connect",
-#     endpoint=endpoints.initiate_oauth,
-#     methods=["GET"],
-#     summary="Initiate HubSpot OAuth Flow",
-#     description="Starts the OAuth flow for connecting a HubSpot account",
-#     response_model=dict
-# )
-#
-# router.add_api_route(
-#     path="/callback",
-#     endpoint=endpoints.oauth_callback,
-#     methods=["GET"],
-#     summary="Handle HubSpot OAuth Callback",
-#     description="Handles the OAuth callback from HubSpot and stores credentials",
-#     response_model=dict
-# )
+router.add_api_route(
+    path="/connect",
+    endpoint=endpoints.initiate_oauth,
+    methods=["GET"],
+    summary="Initiate HubSpot OAuth Flow",
+    description="Starts the OAuth flow for connecting a HubSpot account",
+    response_model=dict
+)
+
+callback_router.add_api_route(
+    path="/callback",
+    endpoint=endpoints.oauth_callback,
+    methods=["GET"],
+    summary="Handle HubSpot OAuth Callback",
+    description="Handles the OAuth callback from HubSpot and stores credentials",
+    response_model=HubspotCallbackResponse
+)
 #
 # # Account Management Routes
 # router.add_api_route(

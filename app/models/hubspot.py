@@ -10,7 +10,7 @@ class Hubspot(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
     provider = Column(String, nullable=False, default="hubspot")
     access_token = Column(String, nullable=False)
     refresh_token = Column(String, nullable=False)

@@ -1,4 +1,5 @@
 # app/core/config.py
+import os
 from functools import lru_cache
 from typing import Optional, Dict, Any
 from pydantic_settings import BaseSettings
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
     # HubSpot
     HUBSPOT_CLIENT_ID: Optional[str] = None
     HUBSPOT_CLIENT_SECRET: Optional[str] = None
+    HUBSPOT_APP_ID: Optional[str] = None
     HUBSPOT_BASE_URL: Optional[str] = None
     HUBSPOT_REDIRECT_URI: Optional[str] = None
 
@@ -103,17 +105,21 @@ class Settings(BaseSettings):
     #     logging.config.dictConfig(logging_config)
     #
 
-
-class Config:
-    env_file = ".env"
-    case_sensitive = True
+    class Config:
+        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+        case_sensitive = True
+        extra = "ignore"
 
 
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance."""
     settings = Settings()
-    # settings.setup_logging()
+    print("DEBUG: Environment variables loaded:")
+    print(f"HUBSPOT_CLIENT_ID: {settings.HUBSPOT_CLIENT_ID}")
+    print(f"HUBSPOT_APP_ID: {settings.HUBSPOT_APP_ID}")
+    print(f"HUBSPOT_CLIENT_SECRET: {settings.HUBSPOT_CLIENT_SECRET}")
+    print(f"HUBSPOT_REDIRECT_URI: {settings.HUBSPOT_REDIRECT_URI}")
     return settings
 
 

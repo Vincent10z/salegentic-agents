@@ -20,7 +20,6 @@ from .response import (
 router = APIRouter()
 
 
-@router.post("", response_model=WorkspaceResponse)
 async def create_workspace(
         request: CreateWorkspaceRequest,
         workspace_service: WorkspaceService = Depends(get_workspace_service)
@@ -30,7 +29,6 @@ async def create_workspace(
     return workspace
 
 
-@router.get("/{workspace_id}", response_model=WorkspaceResponse)
 async def get_workspace(
         workspace_id: str,
         workspace_service: WorkspaceService = Depends(get_workspace_service)
@@ -39,7 +37,6 @@ async def get_workspace(
     return await workspace_service.get_workspace(workspace_id)
 
 
-@router.get("", response_model=WorkspacesListResponse)
 async def list_workspaces(
         page: int = Query(1, ge=1),
         size: int = Query(100, ge=1, le=1000),
@@ -50,7 +47,6 @@ async def list_workspaces(
     return await workspace_service.get_workspaces(page, size, account_id)
 
 
-@router.put("/{workspace_id}", response_model=WorkspaceResponse)
 async def update_workspace(
         workspace_id: str,
         request: UpdateWorkspaceRequest,
@@ -60,7 +56,6 @@ async def update_workspace(
     return await workspace_service.update_workspace(workspace_id, request)
 
 
-@router.delete("/{workspace_id}", response_model=WorkspaceDeleteResponse)
 async def delete_workspace(
         workspace_id: str,
         workspace_service: WorkspaceService = Depends(get_workspace_service)
