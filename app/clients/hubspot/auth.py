@@ -18,16 +18,47 @@ class HubspotAuth:
     from urllib.parse import urlencode
 
     def get_authorization_url(self, state: str) -> str:
-        """Generate OAuth authorization URL."""
+        """Generate OAuth authorization URL with all configured scopes."""
         params = {
             "client_id": self.client_id,
             "redirect_uri": self.redirect_uri,
             "scope": " ".join([
+                # Content
+                "content",
+
+                # Lists
                 "crm.lists.read",
+                "crm.lists.write",
+
+                # Companies
+                "crm.objects.companies.read",
+                "crm.objects.companies.write",
+
+                # Contacts
                 "crm.objects.contacts.read",
                 "crm.objects.contacts.write",
+
+                # Custom Objects
+                "crm.objects.custom.read",
+                "crm.objects.custom.write",
+
+                # Deals
+                "crm.objects.deals.read",
+                "crm.objects.deals.write",
+
+                # Goals
+                "crm.objects.goals.read",
+
+                # Schemas
+                "crm.schemas.companies.read",
+                "crm.schemas.companies.write",
                 "crm.schemas.contacts.read",
                 "crm.schemas.contacts.write",
+                "crm.schemas.custom.read",
+                "crm.schemas.deals.read",
+                "crm.schemas.deals.write",
+
+                # OAuth
                 "oauth"
             ]),
             "state": state

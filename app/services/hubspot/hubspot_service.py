@@ -201,8 +201,8 @@ class HubspotService:
             start_date: datetime,
             end_date: datetime,
             pipeline_id: Optional[str] = None,
-            include_contacts: bool = True,
-            include_engagements: bool = True
+            include_contacts: bool = False,
+            include_engagements: bool = False
     ) -> Dict:
         """Fetch all required data from Hubspot APIs."""
         tasks = {

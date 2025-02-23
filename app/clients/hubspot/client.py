@@ -1,5 +1,5 @@
 from asyncio.log import logger
-from http.client import HTTPException
+from fastapi import HTTPException
 from typing import Dict, List, Optional
 import aiohttp
 from datetime import datetime
@@ -12,7 +12,8 @@ class HubspotClient:
         self.access_token = access_token
         self.base_url = "https://api.hubapi.com"
 
-    async def _make_request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
+    async def _make_request(self, method: str, endpoint: str, data: Optional[Dict] = None,
+                            params: Optional[Dict] = None) -> Dict:
         """Make authenticated request to HubSpot API."""
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -24,30 +25,29 @@ class HubspotClient:
                     method,
                     f"{self.base_url}/{endpoint}",
                     headers=headers,
-                    json=data
+                    json=data,
+                    params=params
             ) as response:
                 if response.status not in [200, 201]:
+                    error_text = await response.text()
                     raise HTTPException(
                         status_code=response.status,
-                        detail=f"HubSpot API error: {await response.text()}"
+                        detail=f"HubSpot API error: {error_text}"
                     )
                 return await response.json()
-
-    async def get_contacts(self, limit: int = 100) -> List[Dict]:
-        """Get contacts from HubSpot."""
-        endpoint = f"crm/v3/objects/contacts?limit={limit}"
-        return await self._make_request("GET", endpoint)
-
-    async def get_deals(self, limit: int = 100) -> List[Dict]:
-        """Get deals from HubSpot."""
-        endpoint = f"crm/v3/objects/deals?limit={limit}"
-        return await self._make_request("GET", endpoint)
 
     async def get_lists(self, limit: int = 100) -> dict:
         """Get HubSpot lists."""
         try:
-            endpoint = f"crm/v3/lists?limit={limit}&includeFilters=false"
-            response = await self._make_request("GET", endpoint)
+            params = {
+                "limit": limit,
+                "includeFilters": "false"
+            }
+            response = await self._make_request(
+                "GET",
+                "crm/v3/lists",
+                params=params
+            )
 
             lists_data = []
             for list_item in response.get("lists", []):
@@ -64,7 +64,10 @@ class HubspotClient:
 
         except Exception as e:
             logger.error(f"Error in HubSpot API call: {str(e)}")
-            raise HTTPException(500, "Failed to fetch HubSpot lists")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to fetch HubSpot lists: {str(e)}"
+            )
 
     async def get_deals(
             self,
@@ -81,7 +84,7 @@ class HubspotClient:
             properties: List of deal properties to include
             after: Continuation token for pagination
             associations: List of objects to associate (contacts, companies, etc.)
-            """
+        """
         params = {"limit": limit}
         if properties:
             params["properties"] = properties
