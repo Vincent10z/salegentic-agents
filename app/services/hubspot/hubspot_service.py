@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.models.hubspot import Hubspot
 from app.repositories.hubspot.hubspot import HubspotRepository
+from ..analytics.analytics_service import AnalyticsProcessor
 from ...api.routes.v1.integrations.hubspot.response import GetHubspotListsResponse, HubspotList, \
     ContactAnalyticsResponse, PipelineAnalyticsResponse, EngagementAnalyticsResponse, DealAnalyticsResponse
 from ...clients.hubspot.auth import HubspotAuth
@@ -22,10 +23,11 @@ from app.core.id_generator.id_generator import generate_hubspot_id
 class HubspotService:
     def __init__(
             self,
-            db: AsyncSession = Depends(get_session),
-            repository: HubspotRepository = None
+            repository: HubspotRepository,
+            analytics_processor: AnalyticsProcessor,
     ):
-        self.repository = repository or HubspotRepository(db)
+        self.repository = repository
+        self.analytics_processor = analytics_processor
         self.auth_client = HubspotAuth(
             client_id=settings.HUBSPOT_CLIENT_ID,
             app_id=settings.HUBSPOT_APP_ID,
@@ -47,11 +49,10 @@ class HubspotService:
         token_data = await self.auth_client.exchange_code(code)
         expires_at = datetime.utcnow() + timedelta(seconds=token_data["expires_in"])
 
-        # Get account details first using the access token
         account_details = await self.auth_client.get_account_details(token_data["access_token"])
 
-        # Create record with all required data
         record = Hubspot(
+            id=generate_hubspot_id(),
             workspace_id=workspace_id,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],

@@ -4,28 +4,50 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
+from app.services.analytics.analytics_service import AnalyticsProcessor
+from app.services.agent.hubspot.account_health_agent.account_health import AccountHealthAgent, AccountHealthScore, RiskLevel
+from app.services.agent.hubspot.account_health_agent.recommendations_engine import LLMRecommendationEngine
 from app.services.hubspot.hubspot_service import HubspotService
-from app.services.agent.hubspot.account_health_agent.account_health import AccountHealthAgent, AccountHealthScore, \
-    RiskLevel
+from app.services.workspace.workspace_service import WorkspaceService
+from app.repositories.agent.agent_repository import AgentRepository
 from app.repositories.workspace.workspace import WorkspaceRepository
+
+
+# Move dependencies here
+def get_agent_repository(db: AsyncSession = Depends(get_session)) -> AgentRepository:
+    return AgentRepository(db)
+
+
+def get_account_health_agent(
+        hubspot_service: HubspotService,
+        analytics_processor: AnalyticsProcessor,
+        recommendation_engine: LLMRecommendationEngine
+) -> AccountHealthAgent:
+    return AccountHealthAgent(
+        hubspot_service=hubspot_service,
+        analytics_processor=analytics_processor,
+        llm_client=recommendation_engine.llm_client
+    )
 
 
 class AgentService:
     def __init__(
             self,
-            db: AsyncSession = Depends(get_session),
-            hubspot_service: HubspotService = Depends(),
-            workspace_repository: WorkspaceRepository = None
+            db: AsyncSession,
+            repository: AgentRepository,
+            workspace_service: WorkspaceService,
+            hubspot_service: HubspotService,
+            account_health_agent: AccountHealthAgent,
+            recommendation_engine: LLMRecommendationEngine,
+            analytics_processor: AnalyticsProcessor
     ):
         self.db = db
+        self.repository = repository
+        self.workspace_service = workspace_service
         self.hubspot_service = hubspot_service
-        self.workspace_repository = workspace_repository or WorkspaceRepository(db)
-
-        # Initialize agents
-        self.account_health_agent = AccountHealthAgent(
-            hubspot_service=hubspot_service,
-            analytics_processor=hubspot_service.analytics_processor
-        )
+        self.account_health_agent = account_health_agent
+        self.recommendation_engine = recommendation_engine
+        self.analytics_processor = analytics_processor
 
         # Configure default monitoring settings
         self.monitoring_config = {
@@ -37,12 +59,10 @@ class AgentService:
     async def initialize_workspace_monitoring(self, workspace_id: str) -> Dict:
         """Initialize monitoring for a new workspace."""
         try:
-            # Verify workspace exists
-            workspace = await self.workspace_repository.get_workspace(workspace_id)
+            workspace = await self.workspace_service.get_workspace(workspace_id)
             if not workspace:
                 raise ValueError(f"Workspace {workspace_id} not found")
 
-            # Perform initial health analysis
             initial_health = await self.account_health_agent.analyze_account_health(workspace_id)
 
             # Store monitoring preferences and initial state
@@ -55,7 +75,8 @@ class AgentService:
                 "monitoring_active": True
             }
 
-            # TODO: Store monitoring state in database
+            # Store monitoring state using repository
+            await self.repository.create_monitoring_state(monitoring_state)
 
             return {
                 "status": "initialized",
