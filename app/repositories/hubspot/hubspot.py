@@ -17,15 +17,15 @@ class HubspotRepository:
         await self.db.refresh(credentials)
         return credentials
 
-    async def get_hubspot_record(self, user_id: str) -> Optional[Hubspot]:
+    async def get_hubspot_record(self, workspace_id: str) -> Optional[Hubspot]:
         """Get active credentials for a user."""
         stmt = (
             select(Hubspot)
-            .where(Hubspot.user_id == user_id)
-            .where(Hubspot.is_active)
+            .where(Hubspot.workspace_id == workspace_id)
+            .where(Hubspot.is_active == True)
         )
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalar_one_or_none()  # Changed from one_or_none()
 
     async def update_hubspot_record(self, credentials: Hubspot) -> Hubspot:
         """Update existing credentials."""

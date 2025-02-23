@@ -11,8 +11,6 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 
-
-# revision identifiers, used by Alembic.
 revision: str = 'eabe7e9e7340'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
@@ -39,7 +37,8 @@ def upgrade() -> None:
                     sa.Column('plan_started_at', sa.DateTime(timezone=True), nullable=True),
                     sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-                    sa.ForeignKeyConstraint(['active_plan_id'], ['plans.id'], name=op.f('fk_accounts_active_plan_id_plans')),
+                    sa.ForeignKeyConstraint(['active_plan_id'], ['plans.id'],
+                                            name=op.f('fk_accounts_active_plan_id_plans')),
                     sa.PrimaryKeyConstraint('id')
                     )
 
@@ -68,7 +67,8 @@ def upgrade() -> None:
                     sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
                     sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-                    sa.ForeignKeyConstraint(['account_id'], ['accounts.id'], name=op.f('fk_workspaces_account_id_accounts')),
+                    sa.ForeignKeyConstraint(['account_id'], ['accounts.id'],
+                                            name=op.f('fk_workspaces_account_id_accounts')),
                     sa.PrimaryKeyConstraint('id')
                     )
 
@@ -79,14 +79,16 @@ def upgrade() -> None:
                     sa.Column('access_token', sa.String(), nullable=False),
                     sa.Column('refresh_token', sa.String(), nullable=False),
                     sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
-                    sa.Column('is_active', sa.Boolean(), nullable=True, default=True),
-                    sa.Column('hubspot_portal_id', sa.String(), nullable=False),
+                    sa.Column('is_active', sa.Boolean(), nullable=False, default=True),
+                    sa.Column('hubspot_portal_id', sa.String(), nullable=True),
                     sa.Column('account_name', sa.String(), nullable=True),
                     sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-                    sa.ForeignKeyConstraint(['workspace_id'], ['workspaces.id'], name=op.f('fk_hubspots_workspace_id_workspace')),
+                    sa.ForeignKeyConstraint(['workspace_id'], ['workspaces.id'],
+                                            name=op.f('fk_hubspots_workspace_id_workspace')),
                     sa.PrimaryKeyConstraint('id')
                     )
+
 
 def downgrade() -> None:
     op.drop_table('hubspots')

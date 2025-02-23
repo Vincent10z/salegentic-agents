@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from typing import List
-from app.api.routes.v1.integrations.hubspot.response import HubspotCallbackResponse
+from app.api.routes.v1.integrations.hubspot.response import HubspotCallbackResponse, GetHubspotListsResponse
 from . import endpoints
 
 router = APIRouter(
@@ -40,6 +40,16 @@ callback_router.add_api_route(
     description="Handles the OAuth callback from HubSpot and stores credentials",
     response_model=HubspotCallbackResponse
 )
+
+router.add_api_route(
+    path="/lists",
+    endpoint=endpoints.get_hubspot_lists,
+    methods=["GET"],
+    summary="Get HubSpot contact lists",
+    description="Getting lists",
+    response_model=GetHubspotListsResponse
+)
+
 #
 # # Account Management Routes
 # router.add_api_route(
@@ -62,7 +72,7 @@ callback_router.add_api_route(
 #     dependencies=[Depends(get_current_user)]
 # )
 #
-# # Contact Routes
+# Contact Routes
 # router.add_api_route(
 #     path="/contacts",
 #     endpoint=endpoints.get_contacts,
@@ -70,8 +80,7 @@ callback_router.add_api_route(
 #     summary="Get HubSpot Contacts",
 #     description="Returns contacts from connected HubSpot account",
 #     response_model=List[dict],
-#     dependencies=[Depends(get_current_user)]
-# )
+
 #
 # router.add_api_route(
 #     path="/contacts/search",
