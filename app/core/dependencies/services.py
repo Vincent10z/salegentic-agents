@@ -9,7 +9,6 @@ from app.services.agent.agent_service import AgentService
 from app.services.users.users_service import UserService
 from app.services.workspace.workspace_service import WorkspaceService
 from app.services.hubspot.hubspot_service import HubspotService
-from app.services.analytics.analytics_service import AnalyticsProcessor
 from app.services.vector.vector_service import VectorDBService
 from app.repositories.vector.vector_store import VectorDBRepository
 
@@ -45,8 +44,8 @@ def get_openai_client():
     return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 
-def get_analytics_processor() -> AnalyticsProcessor:
-    return AnalyticsProcessor()
+# def get_analytics_processor() -> AnalyticsProcessor:
+#     return AnalyticsProcessor()
 
 
 def get_llm_client():
@@ -69,11 +68,9 @@ def get_workspace_service(repo: WorkspaceRepository = Depends(get_workspace_repo
 
 def get_hubspot_service(
         repo: HubspotRepository = Depends(get_hubspot_repository),
-        analytics_processor: AnalyticsProcessor = Depends(get_analytics_processor)
 ) -> HubspotService:
     return HubspotService(
         repository=repo,
-        analytics_processor=analytics_processor
     )
 
 
@@ -90,7 +87,6 @@ def get_agent_service(
         # repository=Depends(get_agent_repository),
         workspace_service: WorkspaceService = Depends(get_workspace_service),
         hubspot_service: HubspotService = Depends(get_hubspot_service),
-        analytics_processor: AnalyticsProcessor = Depends(get_analytics_processor),
 ) -> AgentService:
 
     return AgentService(
@@ -98,5 +94,4 @@ def get_agent_service(
         # repository=repository,
         workspace_service=workspace_service,
         hubspot_service=hubspot_service,
-        analytics_processor=analytics_processor
     )

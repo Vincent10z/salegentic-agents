@@ -9,7 +9,6 @@ from datetime import datetime, timedelta, timezone
 
 from app.models.hubspot import Hubspot, HubspotData, HubspotAnalyticsResult
 from app.repositories.hubspot.hubspot import HubspotRepository
-from ..analytics.analytics_service import AnalyticsProcessor
 from ...api.routes.v1.integrations.hubspot.response import GetHubspotListsResponse, HubspotList, \
     ContactAnalyticsResponse, PipelineAnalyticsResponse, EngagementAnalyticsResponse, DealAnalyticsResponse
 from ...clients.hubspot.auth import HubspotAuth
@@ -24,10 +23,8 @@ class HubspotService:
     def __init__(
             self,
             repository: HubspotRepository,
-            analytics_processor: AnalyticsProcessor,
     ):
         self.repository = repository
-        self.analytics_processor = analytics_processor
         self.auth_client = HubspotAuth(
             client_id=settings.HUBSPOT_CLIENT_ID,
             app_id=settings.HUBSPOT_APP_ID,
