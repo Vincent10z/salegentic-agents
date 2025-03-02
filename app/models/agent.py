@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Dict, List
+
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey
 from app.models.base import Base
 
@@ -17,6 +20,18 @@ class ConversationMessage(Base):
 
     id = Column(String, primary_key=True)
     conversation_id = Column(String, ForeignKey("conversations.id"), nullable=False)
-    role = Column(String, nullable=False)  # "user" or "agent"
+    role = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False)
+
+
+@dataclass
+class AgentState:
+    query: str
+    workspace_id: str
+    user_id: str
+    conversation_id: str
+    tools: List[Dict[str, str]]
+    thoughts: Dict[str, str]
+    actions: Dict[str, str]
+    final_answer: str

@@ -1,35 +1,86 @@
+from typing import Dict, List, Any, Optional
 from datetime import datetime
-from typing import List, Optional, Dict
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-class HealthScoreResponse(BaseModel):
+class AgentResponse(BaseModel):
+    """Response model for an agent query"""
+    conversation_id: str
+    answer: str
+    reasoning: List[str]
+    actions: List[Dict[str, Any]]
+
+
+class ConversationMessageResponse(BaseModel):
+    """Model for a single conversation message"""
+    id: str
+    role: str
+    content: str
+    created_at: str
+
+
+class ConversationResponse(BaseModel):
+    """Response model for conversation history"""
+    conversation_id: str
     workspace_id: str
-    overall_score: float
-    risk_level: str
-    indicators: List[Dict]
-    recommendations: List[str]
-    last_updated: datetime
-    ai_analysis: Optional[Dict] = None
+    user_id: str
+    created_at: str
+    messages: List[ConversationMessageResponse]
 
 
-class RiskPatternsResponse(BaseModel):
-    workspace_id: str
-    patterns: List[Dict]
-    risk_level: str
-    recommendations: List[str]
+class SyncResponse(BaseModel):
+    """Response model for data sync operations"""
+    deals_synced: int
 
 
-class RecommendationsResponse(BaseModel):
-    workspace_id: str
-    recommendations: List[Dict]
-    priority_actions: List[Dict]
-    context: Dict
+class ErrorResponse(BaseModel):
+    """Standard error response model"""
+    detail: str
+    code: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
 
 
-class MonitoringConfigResponse(BaseModel):
-    workspace_id: str
-    check_interval: int
-    risk_threshold: str
-    notification_settings: Dict
+# Transform functions
+def transform_agent_response(
+        result: AgentResponse
+) -> AgentResponse:
+    """Transform agent result to response model"""
+    return AgentResponse(
+        conversation_id=str(result.conversation_id),
+        answer=result.answer,
+        reasoning=result.reasoning,
+        actions=result.actions
+    )
+
+
+def transform_conversation_response(
+        conversation_id: str,
+        workspace_id: str,
+        user_id: str,
+        created_at: datetime,
+        messages: List[Any]
+) -> ConversationResponse:
+    """Transform conversation to response model"""
+    return ConversationResponse(
+        conversation_id=conversation_id,
+        workspace_id=workspace_id,
+        user_id=user_id,
+        created_at=created_at.isoformat(),
+        messages=[
+            ConversationMessageResponse(
+                id=msg.id,
+                role=msg.role,
+                content=msg.content,
+                created_at=msg.created_at.isoformat()
+            )
+            for msg in messages
+        ]
+    )
+
+
+def transform_sync_response(
+        result: Dict[str, Any]
+) -> SyncResponse:
+    return SyncResponse(
+        deals_synced=result["deals_synced"],
+)

@@ -1,11 +1,8 @@
 # app/repositories/agent/agent_repository.py
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-import uuid
-from datetime import datetime
-
 from app.models.agent import Conversation, ConversationMessage
+
 
 class AgentRepository:
     def __init__(self, db: AsyncSession):
@@ -18,10 +15,8 @@ class AgentRepository:
     ) -> Conversation:
         """Create a new conversation"""
         conversation = Conversation(
-            id=str(uuid.uuid4()),
             workspace_id=workspace_id,
-            user_id=user_id,
-            created_at=datetime.utcnow()
+            user_id=user_id
         )
         self.db.add(conversation)
         await self.db.commit()
@@ -35,6 +30,15 @@ class AgentRepository:
         )
         return result.scalars().first()
 
+    async def get_conversation_messages(self, conversation_id: str):
+        """Get all messages for a conversation ordered by creation time"""
+        result = await self.db.execute(
+            select(ConversationMessage)
+            .where(ConversationMessage.conversation_id == conversation_id)
+            .order_by(ConversationMessage.created_at)
+        )
+        return result.scalars().all()
+
     async def add_message(
             self,
             conversation_id: str,
@@ -43,11 +47,9 @@ class AgentRepository:
     ) -> ConversationMessage:
         """Add a message to a conversation"""
         message = ConversationMessage(
-            id=str(uuid.uuid4()),
             conversation_id=conversation_id,
             role=role,
-            content=content,
-            created_at=datetime.utcnow()
+            content=content
         )
         self.db.add(message)
         await self.db.commit()
