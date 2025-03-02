@@ -5,7 +5,10 @@ from app.models.agent import Conversation, ConversationMessage
 
 
 class AgentRepository:
-    def __init__(self, db: AsyncSession):
+    def __init__(
+            self,
+            db: AsyncSession
+    ):
         self.db = db
 
     async def create_conversation(
@@ -23,14 +26,20 @@ class AgentRepository:
         await self.db.refresh(conversation)
         return conversation
 
-    async def get_conversation(self, conversation_id: str) -> Conversation:
+    async def get_conversation(
+            self,
+            conversation_id: str
+    ) -> Conversation:
         """Get a conversation by ID"""
         result = await self.db.execute(
             select(Conversation).where(Conversation.id == conversation_id)
         )
         return result.scalars().first()
 
-    async def get_conversation_messages(self, conversation_id: str):
+    async def get_conversation_messages(
+            self,
+            conversation_id: str
+    ):
         """Get all messages for a conversation ordered by creation time"""
         result = await self.db.execute(
             select(ConversationMessage)

@@ -17,7 +17,7 @@ from app.services.users.users_service import UserService
 from app.services.workspace.workspace_service import WorkspaceService
 from app.services.hubspot.hubspot_service import HubspotService
 from app.services.vector.vector_service import VectorDBService
-from app.repositories.vector.vector_store import VectorDBRepository
+from app.repositories.vector.vector_store import VectorRepository
 
 from app.repositories.account.account import AccountRepository
 from app.repositories.user.user import UserRepository
@@ -52,8 +52,8 @@ def get_hubspot_repository(
 
 def get_vector_repository(
         db: AsyncSession = Depends(get_session)
-) -> VectorDBRepository:
-    return VectorDBRepository(db)
+) -> VectorRepository:
+    return VectorRepository(db)
 
 
 def get_agent_repository(
@@ -105,7 +105,7 @@ def get_hubspot_service(
 
 def get_vector_service(
         db: AsyncSession = Depends(get_session),
-        repository: VectorDBRepository = Depends(get_vector_repository),
+        repository: VectorRepository = Depends(get_vector_repository),
         openai_client: AsyncOpenAI = Depends(get_openai_client)
 ) -> VectorDBService:
     return VectorDBService(
@@ -159,7 +159,7 @@ def get_agent_service(
 def get_data_sync_service(
         db: AsyncSession = Depends(get_session),
         repository: DealRepository = Depends(get_deal_repository),
-        hubspot_service: HubspotService = Depends(HubspotService)
+        hubspot_service: HubspotService = Depends(get_hubspot_service)
 ) -> DataSyncService:
     return DataSyncService(
         db=db,

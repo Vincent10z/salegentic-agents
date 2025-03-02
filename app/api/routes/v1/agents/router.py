@@ -1,5 +1,6 @@
 from fastapi import APIRouter, status
 from . import endpoints
+from .request import AgentQueryRequest
 from .response import (
     AgentResponse,
     ConversationResponse,
@@ -19,6 +20,18 @@ router = APIRouter(
     }
 )
 
+# async def test_function():
+#     return {"message": "Test successful"}
+#
+# router.add_api_route(
+#     path="/query",
+#     endpoint=test_function,  # ⬅️ Replacing `query_agent`
+#     methods=["POST"],
+#     summary="Test function",
+#     status_code=status.HTTP_200_OK,
+# )
+
+
 # Query the agent
 router.add_api_route(
     path="/query",
@@ -26,7 +39,7 @@ router.add_api_route(
     methods=["POST"],
     summary="Query the agent",
     description="Process a natural language query using the agent and get a response",
-    response_model=AgentResponse,
+    # response_model=AgentResponse,
     status_code=status.HTTP_200_OK,
 )
 
@@ -37,7 +50,7 @@ router.add_api_route(
     methods=["GET"],
     summary="Get conversation history",
     description="Retrieve the history of a conversation including all messages",
-    response_model=ConversationResponse,
+    # response_model=ConversationResponse,
     status_code=status.HTTP_200_OK,
 )
 
@@ -48,6 +61,6 @@ router.add_api_route(
     methods=["POST"],
     summary="Sync HubSpot data",
     description="Import and sync HubSpot deal data for analysis",
-    response_model=SyncResponse,
+    # response_model=SyncResponse,
     status_code=status.HTTP_200_OK,
 )

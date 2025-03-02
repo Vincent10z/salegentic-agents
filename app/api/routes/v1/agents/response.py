@@ -1,3 +1,4 @@
+# app/api/routes/v1/agent/response.py
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
@@ -7,8 +8,8 @@ class AgentResponse(BaseModel):
     """Response model for an agent query"""
     conversation_id: str
     answer: str
-    reasoning: List[str]
-    actions: List[Dict[str, Any]]
+    reasoning: List[str] = Field(default_factory=list)
+    actions: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class ConversationMessageResponse(BaseModel):
@@ -25,12 +26,13 @@ class ConversationResponse(BaseModel):
     workspace_id: str
     user_id: str
     created_at: str
-    messages: List[ConversationMessageResponse]
+    messages: List[ConversationMessageResponse] = Field(default_factory=list)
 
 
 class SyncResponse(BaseModel):
     """Response model for data sync operations"""
     deals_synced: int
+    sync_date: str
 
 
 class ErrorResponse(BaseModel):
@@ -42,14 +44,14 @@ class ErrorResponse(BaseModel):
 
 # Transform functions
 def transform_agent_response(
-        result: AgentResponse
+        result: Dict[str, Any]
 ) -> AgentResponse:
     """Transform agent result to response model"""
     return AgentResponse(
-        conversation_id=str(result.conversation_id),
-        answer=result.answer,
-        reasoning=result.reasoning,
-        actions=result.actions
+        conversation_id=result["conversation_id"],
+        answer=result["answer"],
+        reasoning=result.get("reasoning", []),
+        actions=result.get("actions", [])
     )
 
 
@@ -76,11 +78,3 @@ def transform_conversation_response(
             for msg in messages
         ]
     )
-
-
-def transform_sync_response(
-        result: Dict[str, Any]
-) -> SyncResponse:
-    return SyncResponse(
-        deals_synced=result["deals_synced"],
-)

@@ -1,6 +1,7 @@
+# app/api/routes/v1/agent/endpoints.py
 from typing import Dict, Optional
 from fastapi import Depends, HTTPException, Path, Body
-
+from fastapi.responses import JSONResponse
 
 from app.core.auth import get_current_user
 from app.services.agent.agent_service import AgentService
@@ -13,7 +14,7 @@ from .response import (
     SyncResponse,
     transform_agent_response,
     transform_conversation_response,
-    transform_sync_response
+    # transform_sync_response
 )
 from .request import AgentQueryRequest
 
@@ -34,7 +35,6 @@ async def query_agent(
         )
 
         return transform_agent_response(result)
-
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -75,12 +75,15 @@ async def get_conversation(
 async def sync_hubspot_data(
         workspace_id: str,
         current_user: Dict = Depends(get_current_user),
-        data_sync_service: DataSyncService = Depends(get_data_sync_service)
+        crm_sync_service: DataSyncService = Depends(get_data_sync_service)
 ) -> SyncResponse:
     """Sync HubSpot deal data for a workspace"""
     try:
-        result = await data_sync_service.sync_hubspot_deals(workspace_id)
-        return transform_sync_response(result)
+        result = await crm_sync_service.sync_hubspot_deals(workspace_id)
+        return SyncResponse(
+            deals_synced=result["deals_synced"],
+            sync_date=result["sync_date"],
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

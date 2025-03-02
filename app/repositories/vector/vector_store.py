@@ -14,7 +14,7 @@ from app.models.vector import (
 )
 
 
-class VectorDBRepository:
+class VectorRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 

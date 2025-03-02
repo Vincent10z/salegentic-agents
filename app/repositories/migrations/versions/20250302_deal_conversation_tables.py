@@ -3,7 +3,7 @@ import sqlalchemy as sa
 import uuid
 
 # revision identifiers, used by Alembic.
-revision = "20250302_deal_conversation_tables"
+revision = "20250302_deal_tables"
 down_revision = None
 branch_labels = None
 depends_on = None
