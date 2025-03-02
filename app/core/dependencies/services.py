@@ -1,15 +1,17 @@
 from fastapi import Depends
+from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_session
-from app.services.agent.agent_service import AgentService, get_agent_repository, get_account_health_agent
 from app.services.account.account_service import AccountService
+from app.services.agent.agent_service import AgentService
 from app.services.users.users_service import UserService
 from app.services.workspace.workspace_service import WorkspaceService
 from app.services.hubspot.hubspot_service import HubspotService
 from app.services.analytics.analytics_service import AnalyticsProcessor
-from app.services.agent.hubspot.account_health_agent.recommendations_engine import LLMRecommendationEngine
+from app.services.vector.vector_service import VectorDBService
+from app.repositories.vector.vector_store import VectorDBRepository
 
 from app.repositories.account.account import AccountRepository
 from app.repositories.user.user import UserRepository
@@ -34,7 +36,15 @@ def get_hubspot_repository(db: AsyncSession = Depends(get_session)) -> HubspotRe
     return HubspotRepository(db)
 
 
-# Analytics processor dependency
+def get_vector_db_repository(db: AsyncSession = Depends(get_session)) -> VectorDBRepository:
+    return VectorDBRepository(db)
+
+
+def get_openai_client():
+    from openai import AsyncOpenAI
+    return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+
 def get_analytics_processor() -> AnalyticsProcessor:
     return AnalyticsProcessor()
 
@@ -42,12 +52,6 @@ def get_analytics_processor() -> AnalyticsProcessor:
 def get_llm_client():
     from openai import AsyncOpenAI
     return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-
-
-def get_recommendation_engine(
-        llm_client=Depends(get_llm_client)
-) -> LLMRecommendationEngine:
-    return LLMRecommendationEngine(llm_client=llm_client)
 
 
 # Service dependencies
@@ -73,26 +77,26 @@ def get_hubspot_service(
     )
 
 
+def get_vector_db_service(
+        db: AsyncSession = Depends(get_session),
+        repository: VectorDBRepository = Depends(get_vector_db_repository),
+        openai_client: AsyncOpenAI = Depends(get_openai_client)
+) -> VectorDBService:
+    return VectorDBService(db=db, repository=repository, openai_client=openai_client)
+
+
 def get_agent_service(
         db: AsyncSession = Depends(get_session),
-        repository = Depends(get_agent_repository),
+        # repository=Depends(get_agent_repository),
         workspace_service: WorkspaceService = Depends(get_workspace_service),
         hubspot_service: HubspotService = Depends(get_hubspot_service),
         analytics_processor: AnalyticsProcessor = Depends(get_analytics_processor),
-        recommendation_engine: LLMRecommendationEngine = Depends(get_recommendation_engine)
 ) -> AgentService:
-    account_health_agent = get_account_health_agent(
-        hubspot_service=hubspot_service,
-        analytics_processor=analytics_processor,
-        recommendation_engine=recommendation_engine
-    )
 
     return AgentService(
         db=db,
-        repository=repository,
+        # repository=repository,
         workspace_service=workspace_service,
         hubspot_service=hubspot_service,
-        account_health_agent=account_health_agent,
-        recommendation_engine=recommendation_engine,
         analytics_processor=analytics_processor
     )

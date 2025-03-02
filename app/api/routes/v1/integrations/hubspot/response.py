@@ -23,7 +23,7 @@ class HubspotList(BaseModel):
     object_type_id: str = Field(..., alias="objectTypeId")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class GetHubspotListsResponse(BaseModel):

@@ -8,6 +8,7 @@ from app.api.routes.v1.users.router import router as users_router
 from app.api.routes.v1.account.router import router as account_router
 from app.api.routes.v1.workspace.router import router as workspace_router
 from app.api.routes.v1.agents.router import router as agent_router
+from app.api.routes.v1.vector.router import router as vector_router
 
 router = APIRouter()
 
@@ -22,3 +23,4 @@ router.include_router(users_router)
 router.include_router(workspace_router)
 router.include_router(hubspot_callback_router)
 router.include_router(agent_router)
+router.include_router(vector_router)

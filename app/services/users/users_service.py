@@ -9,14 +9,12 @@ from app.core.errors import NotFoundError
 from app.core.id_generator.id_generator import generate_user_id
 
 
-
 class UserService:
     def __init__(
             self,
-            db: AsyncSession,
-            repository: UserRepository = None
+            repository: UserRepository
     ):
-        self.repository = repository or UserRepository(db)
+        self.repository = repository
 
     async def create_user(
             self,
@@ -27,16 +25,14 @@ class UserService:
             phone: str = None,
             where_found_us: str = None,
             account_role: str = 'standard',
-            source: str = 'sf'
+            source: str = 'website'
     ) -> User:
         """Create a new user."""
         try:
-            # Check if user already exists
             existing_user = await self.repository.get_user_by_email(email)
             if existing_user:
                 raise HTTPException(status_code=400, detail="Email already registered")
 
-            # Create new user
             user = User(
                 id=generate_user_id(),
                 email=email,

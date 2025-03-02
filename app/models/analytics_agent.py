@@ -95,7 +95,7 @@ class AnalyticsAgentInput(BaseModel):
     opportunity_metrics: Optional[OpportunityMetricsModel]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "workspace_id": "ws_123456",
                 "time_period": "2024-01-01/2024-03-31",
@@ -143,7 +143,7 @@ class AnalyticsAgentOutput(BaseModel):
     recommendations: List[str] = Field(..., description="Overall recommendations")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "workspace_id": "ws_123456",
                 "analysis_date": "2024-03-23T10:30:00Z",

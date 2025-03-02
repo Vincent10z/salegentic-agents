@@ -1,6 +1,6 @@
 import string
 from random import random
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict
 from uuid import uuid4
 from fastapi import HTTPException
 
@@ -17,7 +17,10 @@ from app.api.routes.v1.workspace.response import (
 
 
 class WorkspaceService:
-    def __init__(self, repository: WorkspaceRepository):
+    def __init__(
+            self,
+            repository: WorkspaceRepository
+    ):
         self.repository = repository
 
     async def create_workspace(self, data: CreateWorkspaceRequest) -> WorkspaceResponse:
@@ -90,7 +93,7 @@ class WorkspaceService:
         deleted_workspace = await self.repository.delete_workspace(workspace)
         return transform_workspace_response(deleted_workspace)
 
-    async def get_workspaces_by_account(
+    async def get_workspaces_by_account_id(
             self,
             account_id: str
     ) -> list[WorkspaceResponse]:
@@ -118,3 +121,91 @@ class WorkspaceService:
             page=page,
             size=size
         )
+
+    async def initialize_workspace_monitoring(
+            self,
+            workspace_id: str
+    ) -> Dict:
+        """Initialize monitoring for a new workspace."""
+        try:
+            workspace = await self.get_workspace(workspace_id)
+            if not workspace:
+                raise ValueError(f"Workspace {workspace_id} not found")
+
+            # TODO: Allow/setup for workspace monitoring settings configuration
+        except ValueError:
+            return None
+        return None
+
+    async def analyze_workspace_health(
+            self,
+            workspace_id: str,
+            force_refresh: bool = False
+    ) -> None:
+        """
+        Analyze workspace health, using cached results if available and recent.
+        """
+        #TODO: Here we will initialize workspace health sync
+
+    async def get_at_risk_workspaces(self) -> List[Dict]:
+        """
+        Identify workspaces that are at risk based on recent analyses.
+        """
+        #TODO: Some monitoring system on cron job that can
+
+    async def update_monitoring_config(
+            self,
+            workspace_id: str,
+            config_updates: Dict
+    ) -> Dict:
+        """
+        Update monitoring configuration for a workspace.
+        """
+
+        # TODO: Store in database updated monitoring config
+        # Maybe just need to update workspace object tbh
+
+    async def get_health_trend(
+            self,
+            workspace_id: str,
+            days: int = 30
+    ) -> List[None]:
+        """
+        Get health score trend for a workspace over time.
+        """
+
+        # TODO: Implement retrieval of historical health scores
+        # This would require storing health scores in a database
+
+
+    async def _get_cached_analysis(
+            self,
+            workspace_id: str
+    ) -> Optional[None]:
+        """
+        Retrieve cached analysis results if available.
+        """
+        # TODO: Implement cache retrieval
+
+
+    async def _cache_analysis_results(
+            self,
+            workspace_id: str,
+            health_score: None
+    ):
+        """
+        Cache analysis results for future use.
+        """
+        # TODO: Implement caching
+
+
+    async def _handle_risk_notification(
+            self,
+            workspace_id: str,
+            health_score: None
+    ):
+        """
+        Handle notifications for high-risk accounts.
+        """
+        # TODO: Implement notification system
+
