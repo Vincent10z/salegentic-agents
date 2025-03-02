@@ -6,11 +6,11 @@ from app.models.base import Base
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.sql import func
 
+
 class AccountStatus(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
     TRIAL = "trial"
-
 
 
 class Account(Base):
