@@ -1,44 +1,50 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-from typing import Dict, List
-from services.hubspot_service import HubspotService
-from core.auth import get_current_user
+from fastapi import Depends, HTTPException, Request
+from typing import Dict, Optional
 
-router = APIRouter()
+from app.core.dependencies.services import get_hubspot_service
+from app.models.hubspot import Hubspot
+from app.services.hubspot.hubspot_service import HubspotService
+from app.api.routes.v1.integrations.hubspot.response import GetHubspotListsResponse
 
-@router.get("/connect")
+
 async def initiate_oauth(
-        request: Request,
-        current_user: Dict = Depends(get_current_user),
-        hubspot_service: HubspotService = Depends()
+        workspace_id: str,
+        hubspot_service: HubspotService = Depends(get_hubspot_service)
 ) -> Dict:
     """Initiate HubSpot OAuth flow."""
-    auth_url = await hubspot_service.initiate_oauth(current_user["id"])
+    auth_url = await hubspot_service.initiate_oauth(workspace_id)
     return {"authorization_url": auth_url}
 
-@router.get("/callback")
+
 async def oauth_callback(
         code: str,
         state: str,
-        current_user: Dict = Depends(get_current_user),
-        hubspot_service: HubspotService = Depends()
-) -> Dict:
+        hubspot_service: HubspotService = Depends(get_hubspot_service)
+) -> Hubspot | None:
     """Handle OAuth callback from HubSpot."""
-    return await hubspot_service.handle_oauth_callback(code, state, current_user["id"])
+    return await hubspot_service.handle_oauth_callback(code, state)
 
-@router.get("/contacts")
-async def get_contacts(
-        current_user: Dict = Depends(get_current_user),
-        hubspot_service: HubspotService = Depends()
-) -> List[Dict]:
-    """Get contacts from HubSpot."""
-    client = await hubspot_service.get_client(current_user["id"])
-    return await client.get_contacts()
 
-@router.get("/deals")
-async def get_deals(
-        current_user: Dict = Depends(get_current_user),
-        hubspot_service: HubspotService = Depends()
-) -> List[Dict]:
-    """Get deals from HubSpot."""
-    client = await hubspot_service.get_client(current_user["id"])
-    return await client.get_deals()
+async def get_hubspot_lists(
+        workspace_id: str,
+        hubspot_service: HubspotService = Depends(get_hubspot_service)
+) -> GetHubspotListsResponse:
+    return await hubspot_service.get_hubspot_lists(workspace_id)
+
+
+
+# async def get_contacts(
+#         hubspot_service: HubspotService = Depends(get_hubspot_service)
+# ) -> List[Dict]:
+#     """Get contacts from HubSpot."""
+#     client = await hubspot_service.get_client(current_user["id"])
+#     return await client.get_contacts()
+
+# @router.get("/deals")
+# async def get_deals(
+#         current_user: Dict = Depends(get_current_user),
+#         hubspot_service: HubspotService = Depends()
+# ) -> List[Dict]:
+#     """Get deals from HubSpot."""
+#     client = await hubspot_service.get_client(current_user["id"])
+#     return await client.get_deals()

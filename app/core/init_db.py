@@ -1,4 +1,4 @@
-from app.repository.vector_store import VectorStore
+from app.repositories.vector_store import VectorStore
 
 
 async def init_vector_store(articles_path: str) -> VectorStore:
