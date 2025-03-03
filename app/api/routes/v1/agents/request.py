@@ -1,9 +1,9 @@
-from typing import Optional, Dict
+from pydantic import BaseModel, Field
+from typing import Optional
 
-from pydantic import BaseModel
 
-
-class UpdateMonitoringConfigRequest(BaseModel):
-    check_interval: Optional[int] = None
-    risk_threshold: Optional[str] = None
-    notification_settings: Optional[Dict] = None
+class AgentQueryRequest(BaseModel):
+    """Request model for querying the agent"""
+    query: str
+    user_id: str
+    conversation_id: Optional[str] = None

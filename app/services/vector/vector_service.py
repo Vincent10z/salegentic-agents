@@ -23,7 +23,7 @@ from app.models.vector import (
     DocumentProcessingStatus,
     DocumentType
 )
-from app.repositories.vector.vector_store import VectorDBRepository
+from app.repositories.vector.vector_store import VectorRepository
 from app.services.vector.vector_helpers import convert_to_dict, get_document_type, extract_text, split_text
 
 
@@ -31,7 +31,7 @@ class VectorDBService:
     def __init__(
             self,
             db: AsyncSession,
-            repository: VectorDBRepository,
+            repository: VectorRepository,
             openai_client: AsyncOpenAI
     ):
         self.db = db
@@ -285,13 +285,13 @@ def get_openai_client() -> AsyncOpenAI:
     return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 
-def get_vector_db_repository(db: AsyncSession = Depends(get_session)) -> VectorDBRepository:
-    return VectorDBRepository(db)
+def get_vector_db_repository(db: AsyncSession = Depends(get_session)) -> VectorRepository:
+    return VectorRepository(db)
 
 
 def get_vector_db_service(
         db: AsyncSession = Depends(get_session),
-        repository: VectorDBRepository = Depends(get_vector_db_repository),
+        repository: VectorRepository = Depends(get_vector_db_repository),
         openai_client: AsyncOpenAI = Depends(get_openai_client)
 ) -> VectorDBService:
     return VectorDBService(db=db, repository=repository, openai_client=openai_client)

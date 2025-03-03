@@ -1,85 +1,54 @@
-from fastapi import APIRouter
-from app.api.routes.v1.agents import endpoints
-from app.api.routes.v1.agents.response import (
-    HealthScoreResponse,
-    RiskPatternsResponse,
-    RecommendationsResponse,
-    MonitoringConfigResponse
+from fastapi import APIRouter, status
+from . import endpoints
+from .request import AgentQueryRequest
+from .response import (
+    AgentResponse,
+    ConversationResponse,
+    SyncResponse,
+    ErrorResponse
 )
 
 router = APIRouter(
-    prefix="/workspaces/{workspace_id}/agents",
-    tags=["Agents"],
+    prefix="/workspaces/{workspace_id}/agent",
+    tags=["Agent"],
     responses={
-        401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden"},
-        404: {"description": "Not Found"},
+        400: {"model": ErrorResponse, "description": "Bad Request"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
+        404: {"model": ErrorResponse, "description": "Not Found"},
+        500: {"model": ErrorResponse, "description": "Internal Server Error"},
     }
 )
 
-# Health Analysis Routes
+# # Query the agent
 router.add_api_route(
-    path="/health",
-    endpoint=endpoints.analyze_workspace_health,
-    methods=["GET"],
-    summary="Analyze Workspace Health",
-    description="Get comprehensive health analysis for a workspace",
-    response_model=HealthScoreResponse
+    path="/query",
+    endpoint=endpoints.query_agent,
+    methods=["POST"],
+    summary="Query the agent",
+    description="Process a natural language query using the agent and get a response",
+    response_model=AgentResponse,
+    status_code=status.HTTP_200_OK,
 )
 
-# router.add_api_route(
-#     path="/risks",
-#     endpoint=endpoints.get_risk_patterns,
-#     methods=["GET"],
-#     summary="Get Risk Patterns",
-#     description="Identify risk patterns and potential issues",
-#     response_model=RiskPatternsResponse
-# )
-#
-# # Recommendations Routes
-# router.add_api_route(
-#     path="/recommendations",
-#     endpoint=endpoints.get_recommendations,
-#     methods=["GET"],
-#     summary="Get Recommendations",
-#     description="Get AI-powered recommendations for improvement",
-#     response_model=RecommendationsResponse
-# )
-#
-# # Monitoring Routes
-# router.add_api_route(
-#     path="/at-risk",
-#     endpoint=endpoints.get_at_risk_workspaces,
-#     methods=["GET"],
-#     summary="Get At-Risk Workspaces",
-#     description="List workspaces currently at risk",
-#     response_model=list[HealthScoreResponse]
-# )
-#
-# router.add_api_route(
-#     path="/config",
-#     endpoint=endpoints.get_monitoring_config,
-#     methods=["GET"],
-#     summary="Get Monitoring Config",
-#     description="Get current monitoring configuration",
-#     response_model=MonitoringConfigResponse
-# )
-#
-# router.add_api_route(
-#     path="/monitoring/config",
-#     endpoint=endpoints.update_monitoring_config,
-#     methods=["PATCH"],
-#     summary="Update Monitoring Config",
-#     description="Update monitoring configuration",
-#     response_model=MonitoringConfigResponse
-# )
-#
-# # Analytics Routes
-# router.add_api_route(
-#     path="/trend",
-#     endpoint=endpoints.get_health_trend,
-#     methods=["GET"],
-#     summary="Get Health Trend",
-#     description="Get historical health scores for trend analysis",
-#     response_model=list[HealthScoreResponse]
-# )
+# Get conversation history
+router.add_api_route(
+    path="/conversations/{conversation_id}",
+    endpoint=endpoints.get_conversation,
+    methods=["GET"],
+    summary="Get conversation history",
+    description="Retrieve the history of a conversation including all messages",
+    # response_model=ConversationResponse,
+    status_code=status.HTTP_200_OK,
+)
+
+# Sync HubSpot data
+router.add_api_route(
+    path="/sync/hubspot",
+    endpoint=endpoints.sync_hubspot_data,
+    methods=["POST"],
+    summary="Sync HubSpot data",
+    description="Import and sync HubSpot deal data for analysis",
+    # response_model=SyncResponse,
+    status_code=status.HTTP_200_OK,
+)

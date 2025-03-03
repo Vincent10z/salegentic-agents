@@ -8,7 +8,6 @@ from .response import (
     SearchHistoryResponse,
     ErrorResponse
 )
-from .request import SearchDocumentsRequest
 
 router = APIRouter(
     prefix="/workspaces/{workspace_id}/knowledge",
@@ -18,7 +17,6 @@ router = APIRouter(
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Not Found"},
-        500: {"model": ErrorResponse, "description": "Internal Server Error"},
     }
 )
 

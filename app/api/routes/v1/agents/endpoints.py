@@ -1,45 +1,91 @@
-from fastapi import Depends
+# app/api/routes/v1/agent/endpoints.py
+from typing import Dict, Optional
+from fastapi import Depends, HTTPException, Path, Body
+from fastapi.responses import JSONResponse
+
+from app.core.auth import get_current_user
 from app.services.agent.agent_service import AgentService
-from app.core.dependencies.services import get_agent_service
+from app.services.hubspot.data_sync_service import DataSyncService
+from app.core.dependencies.services import get_agent_service, get_data_sync_service
+
+from .response import (
+    AgentResponse,
+    ConversationResponse,
+    SyncResponse,
+    transform_agent_response,
+    transform_conversation_response,
+    # transform_sync_response
+)
+from .request import AgentQueryRequest
 
 
-async def initialize_workspace_monitoring(
+async def query_agent(
         workspace_id: str,
+        query_request: AgentQueryRequest,
+        current_user: Dict = Depends(get_current_user),
         agent_service: AgentService = Depends(get_agent_service)
-):
-    """Initialize monitoring for a new workspace."""
-    return await agent_service.initialize_workspace_monitoring(workspace_id)
+) -> AgentResponse:
+    """Send a query to the agent and get a response"""
+    try:
+        result = await agent_service.process_query(
+            workspace_id=workspace_id,
+            user_id=query_request.user_id,
+            query=query_request.query,
+            conversation_id=query_request.conversation_id
+        )
+
+        return transform_agent_response(result)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
 
 
-async def analyze_workspace_health(
+async def get_conversation(
         workspace_id: str,
-        force_refresh: bool = False,
+        conversation_id: str,
+        current_user: Dict = Depends(get_current_user),
         agent_service: AgentService = Depends(get_agent_service)
-):
-    """Analyze workspace health."""
-    return await agent_service.analyze_workspace_health(workspace_id, force_refresh)
+) -> ConversationResponse:
+    """Get conversation history"""
+    try:
+        conversation = await agent_service.repository.get_conversation(conversation_id)
+        if not conversation or conversation.workspace_id != workspace_id:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        messages = await agent_service.repository.get_conversation_messages(conversation_id)
+
+        return transform_conversation_response(
+            conversation_id=conversation.id,
+            workspace_id=conversation.workspace_id,
+            user_id=conversation.user_id,
+            created_at=conversation.created_at,
+            messages=messages
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving conversation: {str(e)}"
+        )
 
 
-async def get_at_risk_workspaces(
-        agent_service: AgentService = Depends(get_agent_service)
-):
-    """Get list of workspaces that are at risk."""
-    return await agent_service.get_at_risk_workspaces()
-
-
-async def update_monitoring_config(
+async def sync_hubspot_data(
         workspace_id: str,
-        config_updates: dict,
-        agent_service: AgentService = Depends(get_agent_service)
-):
-    """Update monitoring configuration for a workspace."""
-    return await agent_service.update_monitoring_config(workspace_id, config_updates)
-
-
-async def get_health_trend(
-        workspace_id: str,
-        days: int = 30,
-        agent_service: AgentService = Depends(get_agent_service)
-):
-    """Get health score trend for a workspace."""
-    return await agent_service.get_health_trend(workspace_id, days)
+        current_user: Dict = Depends(get_current_user),
+        crm_sync_service: DataSyncService = Depends(get_data_sync_service)
+) -> SyncResponse:
+    """Sync HubSpot deal data for a workspace"""
+    try:
+        result = await crm_sync_service.sync_hubspot_deals(workspace_id)
+        return SyncResponse(
+            deals_synced=result["deals_synced"],
+            sync_date=result["sync_date"],
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error syncing HubSpot data: {str(e)}"
+        )

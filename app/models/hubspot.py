@@ -36,6 +36,7 @@ from typing import List, Optional
 class HubspotDeal:
     """Model representing a deal from Hubspot API"""
     id: str
+    name: Optional[str] = None
     amount: Optional[float] = None
     deal_stage: Optional[str] = None
     close_date: Optional[datetime] = None
@@ -45,6 +46,7 @@ class HubspotDeal:
     industry: Optional[str] = None
     contact_ids: List[str] = field(default_factory=list)
     company_ids: List[str] = field(default_factory=list)
+    last_modified_date: Optional[datetime] = None
 
 
 @dataclass
@@ -112,3 +114,12 @@ class HubspotData:
     engagements: List[HubspotEngagement] = field(default_factory=list)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
+
+
+from enum import Enum, auto
+
+
+class HubspotDateField(Enum):
+    LAST_MODIFIED_DATE = "hs_lastmodifieddate"
+    CREATED_DATE = "createdate"
+    CLOSED_DATE = "closedate"

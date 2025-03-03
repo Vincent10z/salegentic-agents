@@ -7,34 +7,53 @@ from app.models.account import Account
 
 
 class AccountRepository:
-    def __init__(self, db: AsyncSession):
+    def __init__(
+            self,
+            db: AsyncSession
+    ):
         self.db = db
 
-    async def create_account(self, account: Account) -> Account:
+    async def create_account(
+            self,
+            account: Account
+    ) -> Account:
         """Create a new account."""
         self.db.add(account)
         await self.db.commit()
         await self.db.refresh(account)
         return account
 
-    async def get_account(self, account_id: str) -> Optional[Account]:
+    async def get_account(
+            self,
+            account_id: str
+    ) -> Optional[Account]:
         """Get account by ID."""
         stmt = select(Account).where(Account.id == account_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def update_account(self, account: Account) -> Account:
+    async def update_account(
+            self,
+            account: Account
+    ) -> Account:
         """Update existing account."""
         await self.db.commit()
         return account
 
-    async def get_accounts_by_subscription_status(self, status: str) -> List[Account]:
+    async def get_accounts_by_subscription_status(
+            self,
+            status: str
+    ) -> List[Account]:
         """Get all accounts with a specific subscription status."""
         stmt = select(Account).where(Account.subscription_status == status)
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def update_subscription_status(self, account_id: str, status: str) -> Optional[Account]:
+    async def update_subscription_status(
+            self,
+            account_id: str,
+            status: str
+    ) -> Optional[Account]:
         """Update account subscription status."""
         stmt = (
             update(Account)

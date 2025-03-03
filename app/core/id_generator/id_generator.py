@@ -14,6 +14,9 @@ class EntityType(IntEnum):
     DOCUMENT_CHUNK = 6
     DOCUMENT_EMBEDDING = 7
     EMBEDDING_SEARCH = 8
+    HUBSPOT_DEAL_SNAPSHOT = 9
+    CONVERSATION = 10
+    CONVERSATION_MESSAGE = 11
 
 
 class IDGenerator:
@@ -30,6 +33,9 @@ class IDGenerator:
         EntityType.DOCUMENT_CHUNK: "chk",
         EntityType.DOCUMENT_EMBEDDING: "emb",
         EntityType.EMBEDDING_SEARCH: "srch",
+        EntityType.HUBSPOT_DEAL_SNAPSHOT: "hds",
+        EntityType.CONVERSATION: "cnv",
+        EntityType.CONVERSATION_MESSAGE: "cnvm"
     }
 
     @classmethod
@@ -99,6 +105,21 @@ def generate_document_embedding_id() -> str:
 def generate_embedding_search_id() -> str:
     """Generate a unique ID for an embedding search record."""
     return IDGenerator.generate_id(EntityType.EMBEDDING_SEARCH)
+
+
+def generate_hubspot_deal_snapshot_id() -> str:
+    """Generate a unique ID for an Hubspot Deal Snapshot record."""
+    return IDGenerator.generate_id(EntityType.HUBSPOT_DEAL_SNAPSHOT)
+
+
+def generate_conversation_id() -> str:
+    """Generate a unique ID for an Hubspot Deal Snapshot record."""
+    return IDGenerator.generate_id(EntityType.CONVERSATION)
+
+
+def generate_conversation_message_id() -> str:
+    """Generate a unique ID for an Hubspot Deal Snapshot record."""
+    return IDGenerator.generate_id(EntityType.CONVERSATION_MESSAGE)
 
 
 def get_id_generator(entity_type: EntityType) -> typing.Callable[[], str]:

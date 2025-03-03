@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.auth import get_current_user
 from app.services.vector.vector_service import VectorDBService
-from app.core.dependencies.services import get_vector_db_service
+from app.core.dependencies.services import get_vector_service
 from app.models.vector import DocumentProcessingStatus, DocumentType
 
 from .response import (
@@ -28,7 +28,7 @@ async def upload_document(
         file: UploadFile = File(..., description="Document file to upload"),
         metadata: Optional[str] = Form(None, description="Optional JSON metadata for the document"),
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> DocumentResponse:
     """Upload and process a document file."""
     try:
@@ -61,7 +61,7 @@ async def upload_document(
 async def get_document(
         document_id: str,
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> DocumentResponse:
     """Get document metadata by ID."""
     document = await service.get_document_by_id(document_id)
@@ -82,7 +82,7 @@ async def list_workspace_documents(
         limit: int = 100,
         offset: int = 0,
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> DocumentListResponse:
     """Get a list of documents for a workspace."""
     if status is not None and status not in DocumentProcessingStatus:
@@ -116,7 +116,7 @@ async def list_workspace_documents(
 async def get_document_content(
         document_id: str,
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> DocumentContentResponse:
     """Get full content of a document."""
     try:
@@ -134,7 +134,7 @@ async def get_document_content(
 async def search_documents(
         search_request: SearchDocumentsRequest,
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> SearchResponse:
     """Search for documents by content."""
     try:
@@ -166,7 +166,7 @@ async def search_documents_form(
         limit: int = Form(10, description="Maximum number of results to return"),
         similarity_threshold: float = Form(0.7, ge=0, le=1, description="Minimum similarity threshold (0-1)"),
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> SearchResponse:
     """Search for documents by content using form data."""
     try:
@@ -196,7 +196,7 @@ async def get_search_history(
         workspace_id: str,
         limit: int = 20,
         current_user: Dict = Depends(get_current_user),
-        service: VectorDBService = Depends(get_vector_db_service)
+        service: VectorDBService = Depends(get_vector_service)
 ) -> SearchHistoryResponse:
     """Get search history for a workspace."""
     try:
