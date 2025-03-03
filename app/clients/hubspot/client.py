@@ -1,3 +1,4 @@
+import json
 from asyncio.log import logger
 from fastapi import HTTPException
 from typing import Dict, List, Optional
@@ -5,8 +6,9 @@ import aiohttp
 from datetime import datetime, timezone, timedelta
 
 from app.api.routes.v1.integrations.hubspot.response import GetHubspotListsResponse
+from app.clients.hubspot.client_helpers import parse_date
 from app.models.hubspot import HubspotEngagement, HubspotContact, HubspotAnalyticsResult, HubspotPipelineStage, \
-    HubspotPipeline, HubspotDeal, HubspotData
+    HubspotPipeline, HubspotDeal, HubspotData, HubspotDateField
 
 
 class HubspotClient:
@@ -77,10 +79,11 @@ class HubspotClient:
         Returns a HubspotData object containing deals and pipeline information
         """
         # Fetch all pipelines first
-        pipelines = await self._get_pipelines()
+        thirty_days_ago = datetime.now() - timedelta(days=5)
+        pipelines = await self._get_pipelines(start_date=thirty_days_ago)
 
         # Fetch deals
-        deals = await self._get_deals()
+        deals = await self._get_deals(start_date=thirty_days_ago)
 
         # Return combined data
         return HubspotData(
@@ -90,8 +93,23 @@ class HubspotClient:
             end_time=datetime.utcnow()
         )
 
-    async def _get_deals(self) -> List[HubspotDeal]:
-        """Fetch all deals from HubSpot API"""
+    async def _get_deals(
+            self,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            date_field: HubspotDateField = HubspotDateField.CREATED_DATE
+    ) -> List[HubspotDeal]:
+        """
+        Fetch deals from HubSpot API with optional date filtering
+
+        Args:
+            start_date: Optional start date for filtering deals
+            end_date: Optional end date for filtering deals
+            date_field: Which date field to filter on (from HubspotDateField enum)
+
+        Returns:
+            List of HubspotDeal objects
+        """
         deals = []
         endpoint = "crm/v3/objects/deals"
         params = {
@@ -99,10 +117,32 @@ class HubspotClient:
             "properties": "dealname,amount,pipeline,dealstage,closedate,createdate,hubspot_owner_id,hs_lastmodifieddate,industry"
         }
 
-        # Paginate through all deals
+        date_field_value = date_field.value
+        if start_date or end_date:
+            filter_groups = []
+            filters = []
+
+            if start_date:
+                start_timestamp = int(start_date.timestamp() * 1000)
+                filters.append({
+                    "propertyName": date_field_value,
+                    "operator": "GTE",
+                    "value": str(start_timestamp)
+                })
+            if end_date:
+                end_timestamp = int(end_date.timestamp() * 1000)
+                filters.append({
+                    "propertyName": date_field_value,
+                    "operator": "LTE",
+                    "value": str(end_timestamp)
+                })
+
+            if filters:
+                filter_groups.append({"filters": filters})
+                params["filterGroups"] = json.dumps(filter_groups)
+
         has_more = True
         after = None
-
         while has_more:
             if after:
                 params["after"] = after
@@ -114,9 +154,9 @@ class HubspotClient:
                 properties = result.get("properties", {})
 
                 # Convert date strings to datetime objects
-                create_date = self._parse_date(properties.get("createdate"))
-                close_date = self._parse_date(properties.get("closedate"))
-                last_modified = self._parse_date(properties.get("hs_lastmodifieddate"))
+                create_date = parse_date(properties.get("createdate"))
+                close_date = parse_date(properties.get("closedate"))
+                last_modified = parse_date(properties.get("hs_lastmodifieddate"))
 
                 # Create deal object
                 deal = HubspotDeal(
@@ -141,44 +181,103 @@ class HubspotClient:
                 deals.append(deal)
 
             # Check if there are more pages
-            has_more = data.get("paging", {}).get("next") is not None
-            after = data.get("paging", {}).get("next", {}).get("after")
+            paging = data.get("paging")
+            if paging and "next" in paging and paging["next"] and "after" in paging["next"]:
+                after = paging["next"]["after"]
+                has_more = True
+            else:
+                has_more = False
 
         return deals
 
-    async def _get_pipelines(self) -> List[HubspotPipeline]:
-        """Fetch all pipelines and their stages"""
+    async def _get_pipelines(
+            self,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            date_field: HubspotDateField = HubspotDateField.CREATED_DATE
+    ) -> List[HubspotPipeline]:
+        """
+        Fetch all pipelines and their stages with optional date filtering
+
+        Args:
+            start_date: Optional start date for filtering pipelines
+            end_date: Optional end date for filtering pipelines
+
+        Returns:
+            List of HubspotPipeline objects
+        """
         pipelines = []
         endpoint = "crm/v3/pipelines/deals"
+        params = {}
 
-        data = await self._make_request("GET", endpoint)
+        date_field_value = date_field.value
 
-        # Process pipelines
-        for result in data.get("results", []):
-            stages = []
+        if start_date or end_date:
+            filter_groups = []
+            filters = []
 
-            # Process stages
-            for stage in result.get("stages", []):
-                stages.append(HubspotPipelineStage(
-                    id=stage.get("id"),
-                    label=stage.get("label"),
-                    display_order=stage.get("displayOrder", 0),
-                    probability=stage.get("probability"),
-                    closed_won=stage.get("metadata", {}).get("isClosed") and
-                               stage.get("metadata", {}).get("probability") == 1.0,
-                    closed_lost=stage.get("metadata", {}).get("isClosed") and
-                                stage.get("metadata", {}).get("probability") == 0.0
-                ))
+            if start_date:
+                start_timestamp = int(start_date.timestamp() * 1000)  # HubSpot uses milliseconds
+                filters.append({
+                    "propertyName": date_field_value,
+                    "operator": "GTE",
+                    "value": str(start_timestamp)
+                })
+            if end_date:
+                end_timestamp = int(end_date.timestamp() * 1000)  # HubSpot uses milliseconds
+                filters.append({
+                    "propertyName": date_field_value,
+                    "operator": "LTE",
+                    "value": str(end_timestamp)
+                })
 
-            # Create pipeline object
-            pipeline = HubspotPipeline(
-                id=result.get("id"),
-                label=result.get("label"),
-                display_order=result.get("displayOrder", 0),
-                stages=sorted(stages, key=lambda s: s.display_order)
-            )
+            if filters:
+                filter_groups.append({"filters": filters})
+                params["filterGroups"] = json.dumps(filter_groups)
 
-            pipelines.append(pipeline)
+
+        has_more = True
+        after = None
+        while has_more:
+            if after:
+                params["after"] = after
+
+            data = await self._make_request("GET", endpoint, params=params)
+
+            # Process pipelines
+            for result in data.get("results", []):
+                stages = []
+
+                # Process stages
+                for stage in result.get("stages", []):
+                    stages.append(HubspotPipelineStage(
+                        id=stage.get("id"),
+                        label=stage.get("label"),
+                        display_order=stage.get("displayOrder", 0),
+                        probability=float(stage.get("metadata", {}).get("probability", 0)),
+                        closed_won=stage.get("metadata", {}).get("isClosed") == "true" and
+                                   float(stage.get("metadata", {}).get("probability", 0)) == 1.0,
+                        closed_lost=stage.get("metadata", {}).get("isClosed") == "true" and
+                                    float(stage.get("metadata", {}).get("probability", 0)) == 0.0
+                    ))
+
+                # Create pipeline object
+                pipeline = HubspotPipeline(
+                    id=result.get("id"),
+                    label=result.get("label"),
+                    display_order=result.get("displayOrder", 0),
+                    stages=sorted(stages, key=lambda s: s.display_order)
+                )
+
+                pipelines.append(pipeline)
+
+            # Check if there are more pages
+            paging = data.get("paging")
+            if paging and "next" in paging and paging["next"] and "after" in paging["next"]:
+                after = paging["next"]["after"]
+                has_more = True
+            else:
+                has_more = False
 
         return pipelines
 

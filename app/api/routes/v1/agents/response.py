@@ -44,15 +44,10 @@ class ErrorResponse(BaseModel):
 
 # Transform functions
 def transform_agent_response(
-        result: Dict[str, Any]
+        result: AgentResponse
 ) -> AgentResponse:
     """Transform agent result to response model"""
-    return AgentResponse(
-        conversation_id=result["conversation_id"],
-        answer=result["answer"],
-        reasoning=result.get("reasoning", []),
-        actions=result.get("actions", [])
-    )
+    return result
 
 
 def transform_conversation_response(

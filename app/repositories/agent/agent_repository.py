@@ -1,6 +1,8 @@
 # app/repositories/agent/agent_repository.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
+from app.core.id_generator.id_generator import generate_conversation_id
 from app.models.agent import Conversation, ConversationMessage
 
 
@@ -18,6 +20,7 @@ class AgentRepository:
     ) -> Conversation:
         """Create a new conversation"""
         conversation = Conversation(
+            id=generate_conversation_id(),
             workspace_id=workspace_id,
             user_id=user_id
         )
@@ -56,6 +59,7 @@ class AgentRepository:
     ) -> ConversationMessage:
         """Add a message to a conversation"""
         message = ConversationMessage(
+            id=generate_conversation_id(),
             conversation_id=conversation_id,
             role=role,
             content=content

@@ -114,3 +114,12 @@ class HubspotData:
     engagements: List[HubspotEngagement] = field(default_factory=list)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
+
+
+from enum import Enum, auto
+
+
+class HubspotDateField(Enum):
+    LAST_MODIFIED_DATE = "hs_lastmodifieddate"
+    CREATED_DATE = "createdate"
+    CLOSED_DATE = "closedate"

@@ -1,9 +1,10 @@
 # app/services/crm/crm_sync_service.py
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 
+from app.core.id_generator.id_generator import generate_hubspot_deal_snapshot_id
 from app.services.hubspot.hubspot_service import HubspotService
 from app.repositories.hubspot.deal_repository import DealRepository
 
@@ -34,11 +35,11 @@ class DataSyncService:
             days_in_pipeline = None
 
             if deal.create_date:
-                current_date = datetime.utcnow()
+                current_date = datetime.now(timezone.utc)  # Use timezone-aware timestamp
                 days_in_pipeline = (current_date - deal.create_date).days
 
             deal_snapshot = {
-                "id": str(uuid.uuid4()),
+                "id": generate_hubspot_deal_snapshot_id(),
                 "workspace_id": workspace_id,
                 "external_id": deal.id,
                 "source": "hubspot",

@@ -99,7 +99,7 @@ class AgentService:
             "agent",
             agent_state["final_answer"]
         )
-        agent_state["actions"].append(message)
+        # agent_state["actions"].append(message)
 
         return AgentResponse(
             conversation_id=str(conversation.id),

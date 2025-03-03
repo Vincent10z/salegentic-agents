@@ -20,26 +20,14 @@ router = APIRouter(
     }
 )
 
-# async def test_function():
-#     return {"message": "Test successful"}
-#
-# router.add_api_route(
-#     path="/query",
-#     endpoint=test_function,  # ⬅️ Replacing `query_agent`
-#     methods=["POST"],
-#     summary="Test function",
-#     status_code=status.HTTP_200_OK,
-# )
-
-
-# Query the agent
+# # Query the agent
 router.add_api_route(
     path="/query",
     endpoint=endpoints.query_agent,
     methods=["POST"],
     summary="Query the agent",
     description="Process a natural language query using the agent and get a response",
-    # response_model=AgentResponse,
+    response_model=AgentResponse,
     status_code=status.HTTP_200_OK,
 )
 

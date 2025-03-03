@@ -140,12 +140,6 @@ class VectorRepository:
         await self.db.refresh(embedding)
         return embedding
 
-    async def create_embeddings_batch(self, embeddings: List[DocumentEmbedding]) -> List[DocumentEmbedding]:
-        """Create multiple embeddings in a batch."""
-        self.db.add_all(embeddings)
-        await self.db.commit()
-        return embeddings
-
     async def search_similar_embeddings(
             self,
             query_embedding: List[float],
@@ -162,15 +156,16 @@ class VectorRepository:
         vector_str = f"'[{','.join(map(str, query_embedding))}]'"
 
         # SQL query using pgvector's <=> operator (cosine distance)
+        # Updated with correct column names from schema
         query = text(f"""
             SELECT 
                 dc.id as chunk_id,
                 dc.content,
-                dc.metadata as chunk_metadata,
+                dc.chunk_metadata as chunk_metadata,
                 ds.id as document_id,
                 ds.filename,
                 ds.document_type,
-                ds.metadata as document_metadata,
+                ds.document_metadata as document_metadata,
                 1 - (de.embedding <=> {vector_str}::vector) as similarity
             FROM 
                 document_embeddings de

@@ -130,7 +130,7 @@ def get_llm_service(
 
 
 def get_tool_registry(
-        vector_service: VectorDBService = Depends(VectorDBService),
+        vector_service: VectorDBService = Depends(get_vector_service),
         deal_repository: DealRepository = Depends(get_deal_repository)
 ) -> ToolRegistry:
     registry = ToolRegistry()

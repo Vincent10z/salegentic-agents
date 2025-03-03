@@ -6,4 +6,4 @@ class AgentQueryRequest(BaseModel):
     """Request model for querying the agent"""
     query: str
     user_id: str
-    conversation_id: Optional[str]
+    conversation_id: Optional[str] = None

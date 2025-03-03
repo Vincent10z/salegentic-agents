@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, func
 from app.models.base import Base
 
 
@@ -11,7 +11,7 @@ class Conversation(Base):
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), nullable=True)
 
 
@@ -22,7 +22,7 @@ class ConversationMessage(Base):
     conversation_id = Column(String, ForeignKey("conversations.id"), nullable=False)
     role = Column(String, nullable=False)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 @dataclass
