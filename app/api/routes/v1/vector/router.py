@@ -53,6 +53,17 @@ router.add_api_route(
     status_code=status.HTTP_200_OK,
 )
 
+# Add this to app/api/routes/v1/knowledge/router.py
+router.add_api_route(
+    path="/documents/{document_id}",
+    endpoint=endpoints.delete_document,
+    methods=["DELETE"],
+    summary="Delete a document",
+    description="Mark a document as deleted and remove its chunks and embeddings from search results",
+    response_model=None,
+    status_code=status.HTTP_200_OK,
+)
+
 router.add_api_route(
     path="/documents/{document_id}/content",
     endpoint=endpoints.get_document_content,

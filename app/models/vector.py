@@ -8,10 +8,11 @@ from pgvector.sqlalchemy import Vector
 from app.models.base import Base
 
 
-class DocumentProcessingStatus(str, Enum):
+class DocumentStatus(str, Enum):
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
+    DELETED = "deleted"
     ERROR = "error"
 
 
@@ -48,18 +49,15 @@ class DocumentStore(Base):
     file_size = Column(Integer, nullable=False)
     upload_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     uploaded_by_user_id = Column(String, ForeignKey("users.id"), nullable=True)
-    processing_status = Column(
-        String,
-        nullable=False,
-        default=DocumentProcessingStatus.PENDING.value
-    )
     error_message = Column(Text, nullable=True)
     document_metadata = Column(JSONB, nullable=False, server_default=expression.text("'{}'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+    status = Column(String, nullable=False)
 
     def __repr__(self):
-        return f"<DocumentStore(id='{self.id}', filename='{self.filename}', status='{self.processing_status}')>"
+        return f"<DocumentStore(id='{self.id}', filename='{self.filename}', status='{self.status}')>"
 
 
 class DocumentChunk(Base):

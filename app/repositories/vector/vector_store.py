@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import or_
 
@@ -10,7 +10,7 @@ from app.models.vector import (
     DocumentChunk,
     DocumentEmbedding,
     EmbeddingSearch,
-    DocumentProcessingStatus
+    DocumentStatus, DocumentStatus
 )
 
 
@@ -61,7 +61,7 @@ class VectorRepository:
 
         # Add filters if provided
         if status:
-            query = query.where(DocumentStore.processing_status == status)
+            query = query.where(DocumentStore.status == status)
         if document_type:
             query = query.where(DocumentStore.document_type == document_type)
 
@@ -78,13 +78,17 @@ class VectorRepository:
 
         return documents, total
 
-    async def update_document_status(self, document_id: str, status: str, error_message: Optional[str] = None) -> Optional[DocumentStore]:
+    async def update_document_status(
+            self,
+            document_id: str, status: str,
+            error_message: Optional[str] = None
+    ) -> Optional[DocumentStore]:
         """Update document processing status."""
         document = await self.get_document(document_id)
         if not document:
             return None
 
-        document.processing_status = status
+        document.status = status
         if error_message:
             document.error_message = error_message
 
@@ -175,7 +179,7 @@ class VectorRepository:
                 document_store ds ON dc.document_id = ds.id
             WHERE 
                 ds.workspace_id = :workspace_id
-                AND ds.processing_status = :completed_status
+                AND ds.status = :completed_status
                 AND 1 - (de.embedding <=> {vector_str}::vector) > :threshold
             ORDER BY 
                 similarity DESC
@@ -187,7 +191,7 @@ class VectorRepository:
             query,
             {
                 "workspace_id": workspace_id,
-                "completed_status": DocumentProcessingStatus.COMPLETED.value,
+                "completed_status": DocumentStatus.COMPLETED.value,
                 "threshold": threshold,
                 "limit": limit
             }
@@ -235,3 +239,51 @@ class VectorRepository:
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def delete_document_soft(
+            self,
+            document_id: str
+    ) -> None:
+        """Soft delete a document by setting deleted_at timestamp."""
+        stmt = (
+            update(DocumentStore)
+            .where(DocumentStore.id == document_id)
+            .values(
+                status=DocumentStatus.DELETED.value,
+                deleted_at=datetime.now(timezone.utc)
+            )
+            .returning(DocumentStore)
+        )
+
+        await self.db.execute(stmt)
+        await self.db.commit()
+
+        return None
+
+    async def delete_document_permanent(self, document_id: str) -> None:
+        """Permanently delete a document and all its related data."""
+        # First get all chunks
+        chunks = await self.get_chunks_by_document(document_id)
+
+        # Delete embeddings for each chunk
+        for chunk in chunks:
+            # Use raw SQL for efficiency with many chunks
+            await self.db.execute(
+                text("DELETE FROM document_embeddings WHERE chunk_id = :chunk_id"),
+                {"chunk_id": chunk.id}
+            )
+
+        # Delete all chunks
+        await self.db.execute(
+            text("DELETE FROM document_chunks WHERE document_id = :document_id"),
+            {"document_id": document_id}
+        )
+
+        # Finally delete the document itself
+        await self.db.execute(
+            text("DELETE FROM document_store WHERE id = :document_id"),
+            {"document_id": document_id}
+        )
+
+        await self.db.commit()
+        return None

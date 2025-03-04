@@ -20,7 +20,7 @@ from app.models.vector import (
     DocumentChunk,
     DocumentEmbedding,
     EmbeddingSearch,
-    DocumentProcessingStatus,
+    DocumentStatus,
     DocumentType
 )
 from app.repositories.vector.vector_store import VectorRepository
@@ -81,7 +81,7 @@ class VectorDBService:
                 content_type=content_type,
                 file_size=file_size,
                 uploaded_by_user_id=user_id,
-                processing_status=DocumentProcessingStatus.PROCESSING.value,
+                status=DocumentStatus.PROCESSING.value,
                 document_metadata=custom_metadata or {}
             )
 
@@ -113,13 +113,13 @@ class VectorDBService:
 
                 document = await self.repository.update_document_status(
                     document_id=document.id,
-                    status=DocumentProcessingStatus.COMPLETED.value
+                    status=DocumentStatus.COMPLETED.value
                 )
 
             except Exception as e:
                 _ = await self.repository.update_document_status(
                     document_id=document.id,
-                    status=DocumentProcessingStatus.ERROR.value,
+                    status=DocumentStatus.ERROR.value,
                     error_message=str(e)
                 )
                 raise
@@ -204,7 +204,7 @@ class VectorDBService:
                 workspace_id=workspace_id,
                 user_id=user_id,
                 query=query,
-                metadata={
+                search_metadata={
                     "result_count": len(results),
                     "top_similarity": results[0]["similarity"] if results else None
                 }
@@ -272,26 +272,36 @@ class VectorDBService:
 
         return result
 
-    async def get_recent_searches(self, workspace_id: str, limit: int = 20) -> List[EmbeddingSearch]:
+    async def delete_document(
+            self,
+            document_id: str,
+            permanent: bool = False
+    ) -> None:
+        """Delete a document.
+
+        Args:
+            document_id: The ID of the document to delete
+            permanent: If True, permanently delete; if False, soft delete
+
+        Returns:
+            The updated document object (for soft delete) or None (for hard delete)
+        """
+        document = await self.repository.get_document(document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        if permanent:
+            return await self.repository.delete_document_permanent(document.id)
+        else:
+            return await self.repository.delete_document_soft(document.id)
+
+    async def get_recent_searches(
+            self,
+            workspace_id: str,
+            limit: int = 20
+    ) -> List[EmbeddingSearch]:
         """Get recent searches for a workspace."""
         return await self.repository.get_searches_by_workspace(
             workspace_id=workspace_id,
             limit=limit
         )
-
-
-# Factory for dependency injection
-def get_openai_client() -> AsyncOpenAI:
-    return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-
-
-def get_vector_db_repository(db: AsyncSession = Depends(get_session)) -> VectorRepository:
-    return VectorRepository(db)
-
-
-def get_vector_db_service(
-        db: AsyncSession = Depends(get_session),
-        repository: VectorRepository = Depends(get_vector_db_repository),
-        openai_client: AsyncOpenAI = Depends(get_openai_client)
-) -> VectorDBService:
-    return VectorDBService(db=db, repository=repository, openai_client=openai_client)
