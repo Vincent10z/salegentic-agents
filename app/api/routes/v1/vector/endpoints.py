@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from app.core.auth import get_current_user
 from app.services.vector.vector_service import VectorDBService
 from app.core.dependencies.services import get_vector_service
-from app.models.vector import DocumentProcessingStatus, DocumentType
+from app.models.vector import DocumentStatus, DocumentType
 
 from .response import (
     DocumentResponse,
@@ -77,7 +77,7 @@ async def get_document(
 
 async def list_workspace_documents(
         workspace_id: str,
-        status: Optional[DocumentProcessingStatus] = None,
+        status: Optional[DocumentStatus] = None,
         document_type: Optional[DocumentType] = None,
         limit: int = 100,
         offset: int = 0,
@@ -85,7 +85,7 @@ async def list_workspace_documents(
         service: VectorDBService = Depends(get_vector_service)
 ) -> DocumentListResponse:
     """Get a list of documents for a workspace."""
-    if status is not None and status not in DocumentProcessingStatus:
+    if status is not None and status not in DocumentStatus:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid status: {status}"
@@ -130,6 +130,22 @@ async def get_document_content(
             detail=f"Failed to retrieve document content: {str(e)}"
         )
 
+
+async def delete_document(
+        document_id: str,
+        permanent: bool = Query(False, description="Whether to permanently delete the document and related data"),
+        current_user: Dict = Depends(get_current_user),
+        service: VectorDBService = Depends(get_vector_service)
+) -> None:
+    """Delete a document by ID."""
+    try:
+        await service.delete_document(document_id, permanent=permanent)
+        return None
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete document: {str(e)}"
+        )
 
 async def search_documents(
         search_request: SearchDocumentsRequest,

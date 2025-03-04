@@ -2,21 +2,16 @@ import asyncio
 import sys
 from logging.config import fileConfig
 from pathlib import Path
-
-project_root = str(Path(__file__).parents[3])
-sys.path.insert(0, project_root)
-
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from alembic import context
 
-# Import your models using absolute imports
 from app.models.base import Base
-from app.models import account, plan, user, hubspot
+from app.models import account, agent, base, hubspot, plan, user, vector, workspace
 
-# from app.repositories.vector import Vector
+project_root = str(Path(__file__).parents[3])
+sys.path.insert(0, project_root)
 
 # this is the Alembic Config object
 config = context.config

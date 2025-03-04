@@ -10,7 +10,7 @@ class DocumentResponse(BaseModel):
     filename: str
     document_type: str
     file_size: int
-    processing_status: str
+    status: str
 
 
 class DocumentListResponse(BaseModel):
@@ -77,7 +77,7 @@ def transform_document_response(document) -> DocumentResponse:
         filename=document.filename,
         document_type=document.document_type,
         file_size=document.file_size,
-        processing_status=document.processing_status,
+        processing_status=document.status.value,
     )
 
 
