@@ -15,7 +15,8 @@ class DealAnalysisTool(BaseTool):
 
     @property
     def description(self) -> str:
-        return "Analyze CRM deals data. Input should specify analysis type (pipeline_health, conversion_rates, revenue_forecast, stalled_deals, or summary)."
+        return ("Analyze CRM deals data. Input should specify analysis type (pipeline_health, conversion_rates, "
+                "revenue_forecast, stalled_deals, or summary).")
 
     async def execute(
             self,
