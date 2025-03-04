@@ -33,7 +33,7 @@ def upgrade() -> None:
         sa.Column('file_size', sa.Integer(), nullable=False),
         sa.Column('upload_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('uploaded_by_user_id', sa.String(), nullable=True),
-        sa.Column('processing_status', sa.String(), nullable=False, server_default=sa.text("'pending'")),
+        sa.Column('status', sa.String(), nullable=False, server_default=sa.text("'pending'")),
         sa.Column('error_message', sa.Text(), nullable=True),
         sa.Column('document_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
