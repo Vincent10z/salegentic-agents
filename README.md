@@ -83,18 +83,3 @@ Run tests using Poetry:
 ```bash
 poetry run pytest
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a new branch for your feature
-3. Make your changes
-4. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please open an issue in the GitHub repository or contact the development team.
